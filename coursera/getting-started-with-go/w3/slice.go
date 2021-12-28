@@ -30,9 +30,8 @@ func main() {
     fmt.Scan(&s)
     if s == "X" { 
       break 
-    } else {
-      i, _ = strconv.Atoi(s)
     }
+    i, _ = strconv.Atoi(s)
     arr = append(arr, i)
     sort.Ints(arr)
     fmt.Println(arr)
