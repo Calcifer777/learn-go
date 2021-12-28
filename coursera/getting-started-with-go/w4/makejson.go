@@ -12,9 +12,9 @@ makejson.go.
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
+  "bufio"
+  "fmt"
+  "os"
   "encoding/json"
 )
 
@@ -23,13 +23,13 @@ func main() {
   var m = make(map[string]string)
 
   fmt.Print("Enter your name: ")
-	nameScanner := bufio.NewScanner(os.Stdin)
-	nameScanner.Scan()
+  nameScanner := bufio.NewScanner(os.Stdin)
+  nameScanner.Scan()
   m["name"] = nameScanner.Text()
 
   fmt.Print("Enter your address: ")
-	addressScanner := bufio.NewScanner(os.Stdin)
-	addressScanner.Scan()
+  addressScanner := bufio.NewScanner(os.Stdin)
+  addressScanner.Scan()
   m["address"] = addressScanner.Text()
 
   jsonData, _ := json.Marshal(&m)
