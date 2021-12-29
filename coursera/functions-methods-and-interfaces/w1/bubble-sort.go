@@ -49,9 +49,10 @@ func Swap(ns []int, idx int) {
 
 func BubbleSort(ns []int) {
 	var flag bool
+	var l = len(ns)
 	for {
 		flag = true
-		for i := 0; i < len(ns)-1; i++ {
+		for i := 0; i < l-1; i++ {
 			if ns[i] > ns[i+1] {
 				Swap(ns, i)
 				flag = false
@@ -60,6 +61,7 @@ func BubbleSort(ns []int) {
 		if flag {
 			break
 		}
+		l--
 	}
 }
 
