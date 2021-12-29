@@ -58,39 +58,35 @@ type Animal interface {
 	Speak()
 }
 
-type Cow struct {
-	name string
-}
+type Cow struct{ name string }
 
-func (a Cow) Eat()   { fmt.Println("grass") }
-func (a Cow) Move()  { fmt.Println("walk") }
-func (a Cow) Speak() { fmt.Println("moo") }
+func (a *Cow) Eat()   { fmt.Println("grass") }
+func (a *Cow) Move()  { fmt.Println("walk") }
+func (a *Cow) Speak() { fmt.Println("moo") }
 
-type Bird struct {
-	name string
-}
+type Bird struct{ name string }
 
-func (a Bird) Eat()   { fmt.Println("worms") }
-func (a Bird) Move()  { fmt.Println("fly") }
-func (a Bird) Speak() { fmt.Println("peep") }
+func (a *Bird) Eat()   { fmt.Println("worms") }
+func (a *Bird) Move()  { fmt.Println("fly") }
+func (a *Bird) Speak() { fmt.Println("peep") }
 
 type Snake struct {
 	name string
 }
 
-func (a Snake) Eat()   { fmt.Println("mice") }
-func (a Snake) Move()  { fmt.Println("slither") }
-func (a Snake) Speak() { fmt.Println("hsss") }
+func (a *Snake) Eat()   { fmt.Println("mice") }
+func (a *Snake) Move()  { fmt.Println("slither") }
+func (a *Snake) Speak() { fmt.Println("hsss") }
 
 func Init(t string, name string) Animal {
 	var a Animal
 	switch t {
 	case "cow":
-		a = Cow{name}
+		a = new(Cow)
 	case "bird":
-		a = Bird{name}
+		a = new(Bird)
 	case "snake":
-		a = Snake{name}
+		a = new(Snake)
 	default:
 		fmt.Println("Unknown animal: %s", t)
 	}
@@ -98,40 +94,15 @@ func Init(t string, name string) Animal {
 }
 
 func Query(a Animal, q string) {
-	switch v := a.(type) {
-	case Cow:
-		switch q {
-		case "eat":
-			v.Eat()
-		case "move":
-			v.Move()
-		case "speak":
-			v.Speak()
-		default:
-			fmt.Printf("Unknown action: %s\n", q)
-		}
-	case Bird:
-		switch q {
-		case "eat":
-			v.Eat()
-		case "move":
-			v.Move()
-		case "speak":
-			v.Speak()
-		default:
-			fmt.Printf("Unknown action: %s\n", q)
-		}
-	case Snake:
-		switch q {
-		case "eat":
-			v.Eat()
-		case "move":
-			v.Move()
-		case "speak":
-			v.Speak()
-		default:
-			fmt.Printf("Unknown action: %s\n", q)
-		}
+	switch q {
+	case "eat":
+		a.Eat()
+	case "move":
+		a.Move()
+	case "speak":
+		a.Speak()
+	default:
+		fmt.Printf("Unknown action: %s\n", q)
 	}
 }
 
