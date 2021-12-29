@@ -58,36 +58,37 @@ type Animal interface {
 	Speak()
 }
 
-type Cow struct{ name string }
+type Cow struct{}
 
 func (a *Cow) Eat()   { fmt.Println("grass") }
 func (a *Cow) Move()  { fmt.Println("walk") }
 func (a *Cow) Speak() { fmt.Println("moo") }
 
-type Bird struct{ name string }
+type Bird struct{}
 
 func (a *Bird) Eat()   { fmt.Println("worms") }
 func (a *Bird) Move()  { fmt.Println("fly") }
 func (a *Bird) Speak() { fmt.Println("peep") }
 
-type Snake struct{ name string }
+type Snake struct{}
 
 func (a *Snake) Eat()   { fmt.Println("mice") }
 func (a *Snake) Move()  { fmt.Println("slither") }
 func (a *Snake) Speak() { fmt.Println("hsss") }
 
-func Init(t string, name string) Animal {
+func Init(t string) Animal {
 	var a Animal
 	switch t {
 	case "cow":
-		a = &Cow{name}
+		a = &Cow{}
 	case "bird":
-		a = &Bird{name}
+		a = &Bird{}
 	case "snake":
-		a = &Snake{name}
+		a = &Snake{}
 	default:
 		fmt.Println("Unknown animal: %s", t)
 	}
+	fmt.Println("Created it!")
 	return a
 }
 
@@ -118,7 +119,7 @@ func main() {
 		}
 		switch splitted[0] {
 		case "newanimal":
-			animals[splitted[1]] = Init(splitted[2], splitted[1])
+			animals[splitted[1]] = Init(splitted[2])
 		case "query":
 			Query(animals[splitted[1]], splitted[2])
 		default:
