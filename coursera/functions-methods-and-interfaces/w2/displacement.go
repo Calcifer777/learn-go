@@ -35,30 +35,30 @@ fmt.Println(fn(5))
 Submit your Go program source code.
 */
 
-package main 
+package main
 
 import (
-  "fmt"
-  "math"
+	"fmt"
+	"math"
 )
 
 func GenDisplaceFn(a, v0, s0 float64) func(t float64) float64 {
-  fn := func(t float64) float64 {
-    return 0.5*a*math.Pow(t, 2) + v0*t + s0
-  }
-  return fn
+	fn := func(t float64) float64 {
+		return 0.5*a*math.Pow(t, 2) + v0*t + s0
+	}
+	return fn
 }
 
 func main() {
-  var a, v0, s0, t float64
-  fmt.Printf("Acceleration: ")
-  fmt.Scan(&a)
-  fmt.Printf("Initial velocity: ")
-  fmt.Scan(&v0)
-  fmt.Printf("Initial displacement: ")
-  fmt.Scan(&s0)
-  displacement := GenDisplaceFn(a, v0, s0)
-  fmt.Printf("Time: ")
-  fmt.Scan(&t)
-  fmt.Printf("Displacement: %.2f\n", displacement(t))
+	var a, v0, s0, t float64
+	fmt.Printf("Acceleration: ")
+	fmt.Scan(&a)
+	fmt.Printf("Initial velocity: ")
+	fmt.Scan(&v0)
+	fmt.Printf("Initial displacement: ")
+	fmt.Scan(&s0)
+	displacement := GenDisplaceFn(a, v0, s0)
+	fmt.Printf("Time: ")
+	fmt.Scan(&t)
+	fmt.Printf("Displacement: %.2f\n", displacement(t))
 }
