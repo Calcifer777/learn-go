@@ -70,9 +70,7 @@ func (a *Bird) Eat()   { fmt.Println("worms") }
 func (a *Bird) Move()  { fmt.Println("fly") }
 func (a *Bird) Speak() { fmt.Println("peep") }
 
-type Snake struct {
-	name string
-}
+type Snake struct{ name string }
 
 func (a *Snake) Eat()   { fmt.Println("mice") }
 func (a *Snake) Move()  { fmt.Println("slither") }
