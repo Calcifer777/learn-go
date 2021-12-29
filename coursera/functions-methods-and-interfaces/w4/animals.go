@@ -82,11 +82,11 @@ func Init(t string, name string) Animal {
 	var a Animal
 	switch t {
 	case "cow":
-		a = new(Cow)
+		a = &Cow{name}
 	case "bird":
-		a = new(Bird)
+		a = &Bird{name}
 	case "snake":
-		a = new(Snake)
+		a = &Snake{name}
 	default:
 		fmt.Println("Unknown animal: %s", t)
 	}
