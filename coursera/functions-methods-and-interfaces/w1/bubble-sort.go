@@ -26,41 +26,45 @@ import (
 )
 
 func ReadInput() []int {
-  fmt.Println("Enter a list of integers (enter 'X' to stop):")
-  var s string
-  var n int
-  var ns = make([]int, 0, 10)
+	fmt.Println("Enter a list of integers (enter 'X' to stop):")
+	var s string
+	var n int
+	var ns = make([]int, 0, 10)
 	for i := 0; i < 10; i++ {
-    fmt.Scan(&s)
-    if s == "X" { break }
-    n, _ = strconv.Atoi(s)
-    ns = append(ns, n)
+		fmt.Scan(&s)
+		if s == "X" {
+			break
+		}
+		n, _ = strconv.Atoi(s)
+		ns = append(ns, n)
 	}
-  return ns
+	return ns
 }
 
 func Swap(ns []int, idx int) {
-  var tmp = ns[idx]
-  ns[idx] = ns[idx+1]
-  ns[idx+1] = tmp
+	var tmp = ns[idx]
+	ns[idx] = ns[idx+1]
+	ns[idx+1] = tmp
 }
 
 func BubbleSort(ns []int) {
-  var flag bool
-  for {
-    flag = true
-    for i:=0; i<len(ns)-1; i++ {
-      if ns[i] > ns[i+1] {
-				Swap(ns, i) 
+	var flag bool
+	for {
+		flag = true
+		for i := 0; i < len(ns)-1; i++ {
+			if ns[i] > ns[i+1] {
+				Swap(ns, i)
 				flag = false
 			}
 		}
-    if flag { break }
+		if flag {
+			break
+		}
 	}
 }
 
 func main() {
-  ns := ReadInput()
-  BubbleSort(ns)
-  fmt.Print("The sorted array is: ", ns)
+	ns := ReadInput()
+	BubbleSort(ns)
+	fmt.Print("The sorted array is: ", ns)
 }
