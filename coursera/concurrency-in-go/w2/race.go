@@ -35,11 +35,12 @@ func func1() {
 			counter++
 		}
 	}
+	fmt.Printf("Done\n")
 }
 
 func main() {
 	go func1()
 	go func1()
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 	fmt.Printf("Counter value: %d\n", counter)
 }
