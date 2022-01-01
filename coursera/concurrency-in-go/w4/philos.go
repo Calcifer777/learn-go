@@ -7,9 +7,9 @@ each adjacent pair of philosophers.
 lecture)
 [X] - The philosophers pick up the chopsticks in any order, not lowest-numbered first
 (which we did in lecture).
-[ ] - In order to eat, a philosopher must get permission from a host which executes
+[X] - In order to eat, a philosopher must get permission from a host which executes
 in its own goroutine.
-[ ] - The host allows no more than 2 philosophers to eat concurrently.
+[X] - The host allows no more than 2 philosophers to eat concurrently.
 [X] - Each philosopher is numbered, 1 through 5.
 [X] - When a philosopher starts eating (after it has obtained necessary locks) it
 prints “starting to eat <number>” on a line by itself, where <number> is the
@@ -60,40 +60,42 @@ func mod(d, m int) int {
 	return res
 }
 
-func (host *Host) Schedule(chAskEat chan int, chAllowEat chan int, chDoneEat chan int, wg *sync.WaitGroup) {
-	// Counter for the number of times a Philo eats
+func (host *Host) RunService(chAskEat chan int, chAllowEat chan int, chDoneEat chan int, wg *sync.WaitGroup) {
 	for {
 		// All Philos are done eating
 		select {
-		case philoId := <-chDoneEat:
-			if !host.eatingPhilos[philoId] {
-				fmt.Printf("[HOST] %d finished eating when never allowed", philoId)
-				panic("Unreachable")
-			}
-			fmt.Printf("[HOST] %d finished eating\n", philoId)
-			host.eatingPhilos[philoId] = false
-			host.num_eating--
-			host.num_servings++
-			fmt.Printf("[HOST] Num eating philos: %d\n", host.num_eating)
 		case philoId := <-chAskEat:
-			var condAllow = host.num_eating < 2 &&
+			var condAllow = host.num_eating < eat_concurrency &&
 				!host.eatingPhilos[philoId] &&
-				!host.eatingPhilos[mod(philoId+1, 5)] &&
-				!host.eatingPhilos[mod(philoId-1, 5)]
+				!host.eatingPhilos[mod(philoId+1, philos_num)] &&
+				!host.eatingPhilos[mod(philoId-1, philos_num)]
 			if condAllow {
 				host.eatingPhilos[philoId] = true
 				host.num_eating++
 				chAllowEat <- philoId
-				fmt.Printf("[HOST] %d asked eating: allowed\n", philoId)
+				fmt.Printf("[HOST] Philo %d asked eating: allowed\n", philoId)
 				fmt.Printf("[HOST] Num eating philos: %d\n", host.num_eating)
 			} else {
-				fmt.Printf("[HOST] %d asked eating: bounced\n", philoId)
+				fmt.Printf("[HOST] Philo %d asked eating: bounced\n", philoId)
 				chAskEat <- philoId
+			}
+		case philoId := <-chDoneEat:
+			if !host.eatingPhilos[philoId] {
+				fmt.Printf("[HOST] Philo %d finished eating when never allowed", philoId)
+				panic("Unreachable")
+			}
+			fmt.Printf("[HOST] Philo %d finished eating\n", philoId)
+			host.eatingPhilos[philoId] = false
+			host.num_eating--
+			host.num_servings++
+			if host.num_eating > 2 {
+				fmt.Printf("[HOST] Num eating philos: %d\n", host.num_eating)
+				panic("Unreachable")
 			}
 		default:
 			fmt.Printf("[HOST] Num servings: %d\n", host.num_servings)
 		}
-		if host.num_servings == 15 {
+		if host.num_servings == philos_num*eat_num {
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -102,13 +104,13 @@ func (host *Host) Schedule(chAskEat chan int, chAllowEat chan int, chDoneEat cha
 }
 
 func (philo *Philo) Eat() {
-	// philo.lChop.mut.Lock()
-	// philo.rChop.mut.Lock()
-	fmt.Printf("[%d] starting to eat\n", philo.id)
+	philo.lChop.mut.Lock()
+	philo.rChop.mut.Lock()
+	fmt.Printf("[PHILO %d] starting to eat\n", philo.id)
 	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-	fmt.Printf("[%d] finishing eating\n", philo.id)
-	// philo.lChop.mut.Unlock()
-	// philo.rChop.mut.Unlock()
+	fmt.Printf("[PHILO %d] finishing eating\n", philo.id)
+	philo.lChop.mut.Unlock()
+	philo.rChop.mut.Unlock()
 	philo.eatCounter++
 }
 
@@ -156,7 +158,7 @@ func main() {
 	// Start Host
 	wg.Add(1)
 	var host = Host{make([]bool, 5), 0, 0}
-	go host.Schedule(chAskEat, chAllowEat, chDoneEat, &wg)
+	go host.RunService(chAskEat, chAllowEat, chDoneEat, &wg)
 	// Dine
 	for i := 0; i < philos_num; i++ {
 		wg.Add(1)
