@@ -129,7 +129,7 @@ func (philo *Philo) Dine(chAskEat chan int, chAllowEat chan int, chDoneEat chan 
 				chDoneEat <- philo.id
 				philo.waiting = false
 			} else {
-				// ... return the allowed id
+				// ... write the allowed id back to the channel
 				chAllowEat <- allowedId
 			}
 		}
