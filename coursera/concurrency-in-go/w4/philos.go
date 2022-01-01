@@ -143,8 +143,8 @@ func (philo *Philo) Dine(chAskEat chan int, chAllowEat chan int, chDoneEat chan 
 
 func main() {
 	// Init
-	var philos = make([]*Philo, 5)
-	var chops = make([]*Chop, 5)
+	var philos = make([]*Philo, philos_num)
+	var chops = make([]*Chop, chops_num)
 	for i := 0; i < chops_num; i++ {
 		chops[i] = new(Chop)
 	}
