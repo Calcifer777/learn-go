@@ -1,35 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
+	"utils"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func readLines(path string) ([]string, error) {
-	fp, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-	scanner := bufio.NewScanner(fp)
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, nil
-}
-
 func Part1() {
-	lines, err := readLines("input.txt")
-	check(err)
+	lines, err := utils.ReadLines("input.txt")
+	utils.Check(err)
 	var prev int = -1
 	var i int
 	for _, line := range lines {
@@ -43,8 +22,8 @@ func Part1() {
 }
 
 func Part2() {
-	lines, err := readLines("input.txt")
-	check(err)
+	lines, err := utils.ReadLines("input.txt")
+	utils.Check(err)
 	var prev int
 	var i int
 	for idx, line := range lines {
