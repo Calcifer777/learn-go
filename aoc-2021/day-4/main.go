@@ -69,7 +69,7 @@ func (board *Board) Play(n int) {
 	for idRow, row := range *board {
 		for idCol, boardNumber := range row {
 			if boardNumber.value == n {
-				(*board)[idRow][idCol] = BoardNumber{boardNumber.value, true}
+				(*board)[idRow][idCol].extracted = true
 			}
 		}
 	}
@@ -155,5 +155,5 @@ func Part2() {
 }
 
 func main() {
-	Part2()
+	Part1()
 }
