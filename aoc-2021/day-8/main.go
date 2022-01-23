@@ -102,15 +102,6 @@ func Part1() {
 	fmt.Printf("Part 1 -> %d\n", sum)
 }
 
-func IndexOf(xs []string, s string) int {
-	for idx, x := range xs {
-		if x == s {
-			return idx
-		}
-	}
-	return -1
-}
-
 func ChunksToInt(chunks []string, mappings []string) int {
 	m := make(map[string]int)
 	for idx, s := range mappings {
