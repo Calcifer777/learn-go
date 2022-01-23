@@ -44,7 +44,7 @@ func Median(arr []int) int {
   if size % 2 == 0 {
     return (sorted[size/2-1] + sorted[size/2]) / 2
   } else {
-    return sorted[size/2+1]
+    return sorted[size/2]
   }
 }
 
@@ -55,7 +55,6 @@ func Mean(arr []int) int {
     sum += i
   }
   res := float64(sum)/float64(size)
-  fmt.Println(res)
   return int(math.Floor(res))
 }
 
