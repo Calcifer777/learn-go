@@ -53,6 +53,10 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 	target := Coord{r: len(riskMap) - 1, c: len(riskMap[0]) - 1}
 	// Initialize queue from starting node (0, 0)
 	queue := []Node{Node{coord: start, risk: 0, prev: nil}}
+	// Initialize bestRisks map; it keeps track of the risks of expanded nodes
+	// and it is used to expand nodes only from the best path
+	// It prevents from visiting the same Node twice in the same path, or
+	// from enqueueing a Node which was already visited from a less costly path
 	bestRisks := make(map[Coord]int)
 	for {
 		if len(queue) == 0 {
@@ -70,14 +74,14 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 			Coord{r: head.coord.r + 0, c: head.coord.c - 1}, // left
 		}
 		for _, candidate := range candidates {
-			if candidate.r >= 0 && candidate.r < height && // do not go out of bound horizontally
-				candidate.c >= 0 && candidate.c < width { // do not go out of bound vertically
+			if candidate.r >= 0 && candidate.r < height && // check vertical bounds
+				candidate.c >= 0 && candidate.c < width { // check horizontal bounds
 				currentNode := Node{
 					coord: candidate,
 					risk:  head.risk + riskMap[candidate.r][candidate.c],
 					prev:  &head,
 				}
-				// do not visit same node twice
+				// visit a Node only from the best path
 				if br, ok := bestRisks[candidate]; !ok || currentNode.risk < br {
 					queue = append(queue, currentNode)
 					bestRisks[candidate] = currentNode.risk
@@ -90,6 +94,10 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 	return Node{coord: start, risk: 0, prev: nil}, errors.New("Could not find a path to the target coord")
 }
 
+// Replicate a RiskMap n times vertically and horizontally,
+// increasing the risk values at each increment
+// (diagonal increment counts as 2)
+// Risk values wrap at 1 when over 10 (e.g. 3 + 1 -> 4, 9 + 1 -> 1)
 func Extend(m RiskMap, n int) RiskMap {
 	height := len(m)
 	width := len(m[0])
