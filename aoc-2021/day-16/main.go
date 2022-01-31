@@ -132,7 +132,6 @@ func SumVersions(p Packet) int {
 }
 
 func (p Packet) Value() *big.Int {
-	// fmt.Printf("TypeID: %d\n", p.typeId)
 	switch int(p.typeId) {
 	case 0: // sum
 		{
