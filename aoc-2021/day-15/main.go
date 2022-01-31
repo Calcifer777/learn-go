@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "container/heap"
 	"errors"
 	"fmt"
 	"sort"
@@ -17,6 +16,7 @@ type Node struct {
 	risk  int
 	prev  *Node
 }
+
 func (n *Node) Path() []Coord {
 	path := []Coord{n.coord}
 	node := n
@@ -24,7 +24,7 @@ func (n *Node) Path() []Coord {
 		if node.prev == nil {
 			break
 		} else {
-		  path = append(path, node.prev.coord)
+			path = append(path, node.prev.coord)
 			node = node.prev
 		}
 	}
@@ -55,7 +55,6 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 	queue := []Node{Node{coord: start, risk: 0, prev: nil}}
 	bestRisks := make(map[Coord]int)
 	for {
-		// fmt.Printf("Step: %d\n", i)
 		if len(queue) == 0 {
 			return Node{}, errors.New("Exhausted available nodes, could not find a path to the target coord")
 		}
@@ -64,7 +63,6 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 		}
 		head := queue[0]
 		queue = queue[1:]
-		// fmt.Printf("Queue:\n"); for _, n := range queue { fmt.Printf("%+v\n", n) }
 		candidates := [4]Coord{
 			Coord{r: head.coord.r + 1, c: head.coord.c + 0}, // down
 			Coord{r: head.coord.r - 1, c: head.coord.c + 0}, // up
@@ -81,7 +79,6 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 				}
 				// do not visit same node twice
 				if br, ok := bestRisks[candidate]; !ok || currentNode.risk < br {
-					fmt.Printf("Adding node to queue: %+v\n", candidate)
 					queue = append(queue, currentNode)
 					bestRisks[candidate] = currentNode.risk
 				}
@@ -93,15 +90,38 @@ func Dijkstra(riskMap RiskMap) (Node, error) {
 	return Node{coord: start, risk: 0, prev: nil}, errors.New("Could not find a path to the target coord")
 }
 
-func main() {
+func Extend(m RiskMap, n int) RiskMap {
+	height := len(m)
+	width := len(m[0])
+	newMap := make(RiskMap, height*n)
+	for r := 0; r < height*n; r++ {
+		row := make([]int, width*n)
+		for c := 0; c < width*n; c++ {
+			row[c] = (m[r%height][c%width]+r/height+c/width-1)%9 + 1
+		}
+		newMap[r] = row
+	}
+	return newMap
+}
+
+func Part1() {
 	lines, _ := utils.ReadLines("input.txt")
-	// lines, _ := utils.ReadLines("input-sample-1.txt")
 	riskMap := ParseInput(lines)
 	node, err := Dijkstra(riskMap)
 	utils.Check(err)
-	fmt.Printf("Reached %v, Risk %d, with path: \n", node.coord, node.risk)
-	// fmt.Printf("With path: \n")
-	// for _, c := range node.Path() {
-	// 	fmt.Printf("%v\n", c)
-	// }
+	fmt.Printf("Part 1 -> %d\n", node.risk)
+}
+
+func Part2() {
+	lines, _ := utils.ReadLines("input.txt")
+	riskMap := ParseInput(lines)
+	extended := Extend(riskMap, 5)
+	node, err := Dijkstra(extended)
+	utils.Check(err)
+	fmt.Printf("Part 2 -> %d\n", node.risk)
+}
+
+func main() {
+	Part1()
+	Part2()
 }
