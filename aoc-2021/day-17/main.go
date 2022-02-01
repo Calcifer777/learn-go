@@ -86,10 +86,10 @@ func main() {
 	lines, _ := utils.ReadLines("input.txt")
 	area := ParseInput(lines[0])
 	fmt.Printf("Area: %+v\n", area)
-  offset := 500
-  maxVx0 := area.x1 + 1       // Max Vx allowed; can't overshoot the area boundaries
-  maxVy0 := 1000              // Max Vy allowed; I can't find a smart upper bound for this
-  VyRange := maxVy0 + offset  // Allow for negative initial y velocities
+	offset := 500
+	maxVx0 := area.x1 + 1      // Max Vx allowed; can't overshoot the area boundaries
+	maxVy0 := 1000             // Max Vy allowed; I can't find a smart upper bound for this
+	VyRange := maxVy0 + offset // Allow for negative initial y velocities
 	grid := make([][]int, maxVx0)
 	for vx := 0; vx < maxVx0; vx++ {
 		grid[vx] = make([]int, VyRange)
