@@ -4,11 +4,19 @@ package main
 
 import (
 	"fmt"
+  "go.uber.org/zap"
 	"math"
 	"regexp"
 	"strconv"
 	"utils"
 )
+
+var sugarLogger *zap.SugaredLogger
+
+func WithDevelopmentLogger(){
+  logger,_ := zap.NewDevelopment()
+  sugarLogger = logger.Sugar()
+}
 
 type Point struct{ x, y, vx, vy int }
 type Area struct{ x0, x1, y0, y1 int }
@@ -83,6 +91,7 @@ func Shoot(p Point, a Area) int {
 }
 
 func main() {
+  WithDevelopmentLogger()
 	lines, _ := utils.ReadLines("input.txt")
 	area := ParseInput(lines[0])
 	fmt.Printf("Area: %+v\n", area)
@@ -110,7 +119,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("Best vx: %d, Best vy: %d, Max Y: %d, Distinct: %d\n", bestVx, bestVy+offset, maxY, distinct)
-	fmt.Printf("Part 1 -> %d\n", maxY)
-	fmt.Printf("Part 2 -> %d\n", distinct)
+  sugarLogger.Infof("Best vx: %d, Best vy: %d, Max Y: %d, Distinct: %d", bestVx, bestVy+offset, maxY, distinct)
+	sugarLogger.Infof("Part 1 -> %d", maxY)
+	sugarLogger.Infof("Part 2 -> %d", distinct)
 }
