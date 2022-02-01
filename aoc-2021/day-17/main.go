@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"utils"
@@ -53,11 +54,11 @@ func IsIn(p Point, a Area) int {
 	if p.y > a.y1 {
 		return -1
 		// Hit
+	} else if p.y < a.y0 || p.x > a.x1 {
+		return 1
 	} else if p.x >= a.x0 && p.x <= a.x1 && p.y >= a.y0 && p.y <= a.y1 {
 		return 0
 		// Within y, but off x
-	} else if p.y < a.y0 {
-		return 1
 	} else {
 		return -1
 	}
@@ -75,7 +76,7 @@ func Shoot(p Point, a Area) int {
 		if isin == 0 {
 			return maxY
 		} else if isin == 1 {
-			return 696969
+			return math.MinInt
 		}
 		i++
 	}
@@ -85,28 +86,31 @@ func main() {
 	lines, _ := utils.ReadLines("input.txt")
 	area := ParseInput(lines[0])
 	fmt.Printf("Area: %+v\n", area)
-	gridSize := 1000
-	grid := make([][]int, gridSize)
-	for vx := 0; vx < gridSize; vx++ {
-		grid[vx] = make([]int, gridSize)
-		for vy := 0; vy < gridSize; vy++ {
-			grid[vx][vy] = Shoot(Point{0, 0, vx - 500, vy - 500}, area)
+  offset := 500
+  maxVx0 := area.x1 + 1       // Max Vx allowed; can't overshoot the area boundaries
+  maxVy0 := 1000              // Max Vy allowed; I can't find a smart upper bound for this
+  VyRange := maxVy0 + offset  // Allow for negative initial y velocities
+	grid := make([][]int, maxVx0)
+	for vx := 0; vx < maxVx0; vx++ {
+		grid[vx] = make([]int, VyRange)
+		for vy := 0; vy < VyRange; vy++ {
+			grid[vx][vy] = Shoot(Point{0, 0, vx, vy - offset}, area)
 		}
 	}
 	var bestVx, bestVy, maxY, distinct int
-	for vx := 0; vx < gridSize; vx++ {
-		for vy := 0; vy < gridSize; vy++ {
-			if grid[vx][vy] != 696969 {
+	for vx := 0; vx < maxVx0; vx++ {
+		for vy := 0; vy < VyRange; vy++ {
+			if grid[vx][vy] != math.MinInt {
 				distinct += 1
 			}
-			if grid[vx][vy] != 696969 && grid[vx][vy] > maxY {
+			if grid[vx][vy] != math.MinInt && grid[vx][vy] > maxY {
 				maxY = grid[vx][vy]
 				bestVx = vx
 				bestVy = vy
 			}
 		}
 	}
-	fmt.Printf("Best vx: %d, Best vy: %d, Max Y: %d, Distinct: %d\n", bestVx, bestVy, maxY, distinct)
+	fmt.Printf("Best vx: %d, Best vy: %d, Max Y: %d, Distinct: %d\n", bestVx, bestVy+offset, maxY, distinct)
 	fmt.Printf("Part 1 -> %d\n", maxY)
 	fmt.Printf("Part 2 -> %d\n", distinct)
 }
