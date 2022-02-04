@@ -19,8 +19,8 @@ var explodeTestData = []struct {
 
 func TestExplodePair(t *testing.T) {
 	for _, tt := range explodeTestData {
-		in := ParseInput(tt.in)
-		out := ParseInput(tt.out)
+		in := ParseN(tt.in)
+		out := ParseN(tt.out)
 		res := Explode(in)
 		if !reflect.DeepEqual(res, out) {
 			t.Fatalf("Input: %v\nout:  %v\nwant: %v", in, res, out)
@@ -31,8 +31,8 @@ func TestExplodePair(t *testing.T) {
 func TestReducePair(t *testing.T) {
 	in := "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
 	out := "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
-	res := Reduce(ParseInput(in))
-	if !reflect.DeepEqual(res, ParseInput(out)) {
+	res := Reduce(ParseN(in))
+	if !reflect.DeepEqual(res, ParseN(out)) {
 		t.Fatalf("Reduce(%v)=\n%v\nwant \n%v", in, res, out)
 	}
 }
@@ -48,8 +48,8 @@ var reduceListTestData = []struct {
 
 func TestReduceList(t *testing.T) {
 	for _, tt := range reduceListTestData {
-		in := utils.Map(tt.in, ParseInput)
-		want := ParseInput(tt.want)
+		in := utils.Map(tt.in, ParseN)
+		want := ParseN(tt.want)
 		out := ReduceList(in)
 		if !reflect.DeepEqual(out, want) {
 			t.Fatalf("\nout: %v\nwant: %v", out, tt.want)
@@ -71,11 +71,10 @@ var magnitudeTestData = []struct {
 
 func TestMagnitude(t *testing.T) {
 	for _, tt := range magnitudeTestData {
-		in := ParseInput(tt.in)
+		in := ParseN(tt.in)
 		out := Magnitude(in)
 		if out != tt.want {
 			t.Fatalf("Magnitude(%v)=%v, want %v", tt.in, out, tt.want)
 		}
 	}
 }
-

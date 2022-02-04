@@ -7,17 +7,17 @@ import (
 	"utils"
 )
 
-type P struct {
+type N struct {
 	value int
 	level int
 }
 
-func (p P) String() string {
-	return fmt.Sprintf("P{%d,%d}", p.value, p.level)
+func (p N) String() string {
+	return fmt.Sprintf("N{%d,%d}", p.value, p.level)
 }
 
-func ParseInput(s string) []P {
-	pairs := make([]P, 0)
+func ParseN(s string) []N {
+	pairs := make([]N, 0)
 	var open int
 	var n string
 	for _, c := range s {
@@ -29,7 +29,7 @@ func ParseInput(s string) []P {
 		case ',', ']':
 			if n != "" {
 				x, _ := strconv.Atoi(n)
-				pairs = append(pairs, P{x, open})
+				pairs = append(pairs, N{x, open})
 				n = ""
 			}
 			if c == ']' {
@@ -40,32 +40,32 @@ func ParseInput(s string) []P {
 	return pairs
 }
 
-func Add(a, b []P) []P {
-	inc := func(p P) P { return P{p.value, p.level + 1} }
+func Add(a, b []N) []N {
+	inc := func(p N) N { return N{p.value, p.level + 1} }
 	a1 := utils.Map(a, inc)
 	b1 := utils.Map(b, inc)
 	return append(a1, b1...)
 }
 
-func Explode(ps []P) []P {
-	xs := make([]P, len(ps))
+func Explode(ps []N) []N {
+	xs := make([]N, len(ps))
 	copy(xs, ps)
 	// Explode pairs
 	var explodedIdx int = -1
 	for i := 0; i < len(xs); i++ {
 		if xs[i].level > 4 {
 			if i == 0 {
-				xs[i+2] = P{xs[i+2].value + xs[i+1].value, xs[i+2].level}
-				xs[i] = P{0, xs[i].level - 1}
+				xs[i+2] = N{xs[i+2].value + xs[i+1].value, xs[i+2].level}
+				xs[i] = N{0, xs[i].level - 1}
 				explodedIdx = 1
 			} else if i == len(xs)-2 {
-				xs[i-1] = P{xs[i-1].value + xs[i].value, xs[i-1].level}
-				xs[i+1] = P{0, xs[i+1].level - 1}
+				xs[i-1] = N{xs[i-1].value + xs[i].value, xs[i-1].level}
+				xs[i+1] = N{0, xs[i+1].level - 1}
 				explodedIdx = i
 			} else if xs[i].level == xs[i+1].level {
-				xs[i-1] = P{xs[i-1].value + xs[i].value, xs[i-1].level}
-				xs[i+2] = P{xs[i+2].value + xs[i+1].value, xs[i+2].level}
-				xs[i+1] = P{0, xs[i+1].level - 1}
+				xs[i-1] = N{xs[i-1].value + xs[i].value, xs[i-1].level}
+				xs[i+2] = N{xs[i+2].value + xs[i+1].value, xs[i+2].level}
+				xs[i+1] = N{0, xs[i+1].level - 1}
 				explodedIdx = i
 			}
 			break
@@ -80,8 +80,8 @@ func Explode(ps []P) []P {
 	}
 }
 
-func Split(ps []P) []P {
-	xs := make([]P, len(ps))
+func Split(ps []N) []N {
+	xs := make([]N, len(ps))
 	copy(xs, ps)
 	var splitIdx int = -1
 	for idx, p := range xs {
@@ -93,17 +93,17 @@ func Split(ps []P) []P {
 	if splitIdx == -1 {
 		return xs
 	}
-	newPairs := []P{
-		P{xs[splitIdx].value / 2, xs[splitIdx].level + 1},
-		P{(xs[splitIdx].value + 1) / 2, xs[splitIdx].level + 1},
+	newPairs := []N{
+		N{xs[splitIdx].value / 2, xs[splitIdx].level + 1},
+		N{(xs[splitIdx].value + 1) / 2, xs[splitIdx].level + 1},
 	}
 	splitted := append(xs[:splitIdx], newPairs...)
 	splitted = append(splitted, ps[splitIdx+1:]...)
 	return splitted
 }
 
-func ReduceOnce(ps []P) []P {
-	xs := make([]P, len(ps))
+func ReduceOnce(ps []N) []N {
+	xs := make([]N, len(ps))
 	copy(xs, ps)
 	// fmt.Printf("exploding...")
 	exploded := Explode(xs)
@@ -116,10 +116,10 @@ func ReduceOnce(ps []P) []P {
 	}
 }
 
-func Reduce(ps []P) []P {
-	curr := make([]P, len(ps))
+func Reduce(ps []N) []N {
+	curr := make([]N, len(ps))
 	copy(curr, ps)
-	prev := make([]P, len(ps))
+	prev := make([]N, len(ps))
 	copy(prev, ps)
 	var i int
 	// fmt.Printf("Reducing:\n%v\n", ps)
@@ -130,15 +130,15 @@ func Reduce(ps []P) []P {
 			// fmt.Printf("\tDone after %d steps\n", i-1)
 			return curr
 		}
-		prev = make([]P, len(curr))
+		prev = make([]N, len(curr))
 		copy(prev, curr)
 		i++
 	}
 }
 
-func ReduceList(xs [][]P) []P {
+func ReduceList(xs [][]N) []N {
 	if len(xs) == 0 {
-		return make([]P, 0)
+		return make([]N, 0)
 	} else if len(xs) == 1 {
 		return xs[0]
 	} else {
@@ -151,69 +151,62 @@ func ReduceList(xs [][]P) []P {
 	}
 }
 
-func Magnitude(ps []P) int {
-	xs := make([]P, len(ps))
+func Magnitude(ps []N) int {
+	xs := make([]N, len(ps))
 	copy(xs, ps)
-  var flag bool
-  for {
-    flag = true
-    for i:=0; i<len(xs)-1; i++ {
-      if xs[i].level == xs[i+1].level {
-        xs = append(
-          append(xs[:i], P{3*xs[i].value+2*xs[i+1].value, xs[i].level-1}),
-          xs[i+2:]...
-        )
-        flag = false
-        break
-      }
-    }
-    if flag { break }
-  }
-  return xs[0].value
+	var flag bool
+	for {
+		flag = true
+		for i := 0; i < len(xs)-1; i++ {
+			if xs[i].level == xs[i+1].level {
+				xs = append(
+					append(xs[:i], N{3*xs[i].value + 2*xs[i+1].value, xs[i].level - 1}),
+					xs[i+2:]...,
+				)
+				flag = false
+				break
+			}
+		}
+		if flag {
+			break
+		}
+	}
+	return xs[0].value
 }
 
-func LargestPairMagnitude(xs [][]P) int {
-  var largest int
-  for i := 0; i<len(xs); i++ {
-    for j := 0; j<len(xs); j++ {
-      if i == j {
-        continue
-      }
-      sum := Add(xs[i], xs[j])
-      reduced := Reduce(sum)
-      m := Magnitude(reduced)
-      if m > largest {
-        largest = m
-      }
-    }
-  }
-  return largest
+func LargestPairMagnitude(xs [][]N) int {
+	var largest int
+	for i := 0; i < len(xs); i++ {
+		for j := 0; j < len(xs); j++ {
+			if i == j {
+				continue
+			}
+			sum := Add(xs[i], xs[j])
+			reduced := Reduce(sum)
+			m := Magnitude(reduced)
+			if m > largest {
+				largest = m
+			}
+		}
+	}
+	return largest
 }
 
 func Part1() {
 	lines, _ := utils.ReadLines("input.txt")
-	xs := utils.Map(lines, ParseInput)
-  result := ReduceList(xs)
-  fmt.Printf("Part 1 -> %d\n", Magnitude(result))
+	xs := utils.Map(lines, ParseN)
+	result := ReduceList(xs)
+	fmt.Printf("Part 1 -> %d\n", Magnitude(result))
 }
 
 func Part2() {
 	lines, _ := utils.ReadLines("input.txt")
-	xs := utils.Map(lines, ParseInput)
-  result := LargestPairMagnitude(xs)
-  fmt.Printf("Part 2 -> %d\n", result)
+	xs := utils.Map(lines, ParseN)
+	result := LargestPairMagnitude(xs)
+	fmt.Printf("Part 2 -> %d\n", result)
 }
 
 func main() {
-  Part1()
-  Part2()
-}
-
-func main1() {
-  s1 := "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]"
-  s2 := "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]"
-  sum := Add(ParseInput(s1), ParseInput(s2))
-  reduced := Reduce(sum)
-  m := Magnitude(reduced)
-  fmt.Printf("Sum: %v\n", m)
+	Part1()
+	Part2()
 }
