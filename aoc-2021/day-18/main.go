@@ -56,16 +56,16 @@ func Explode(ps []P) []P {
 		if xs[i].level > 4 {
 			if i == 0 {
 				xs[i+2] = P{xs[i+2].value + xs[i+1].value, xs[i+2].level}
-				xs[i] = P{0, xs[i].level}
+				xs[i] = P{0, xs[i].level - 1}
 				explodedIdx = 1
 			} else if i == len(xs)-2 {
 				xs[i-1] = P{xs[i-1].value + xs[i].value, xs[i-1].level}
-				xs[i+1] = P{0, xs[i+1].level}
+				xs[i+1] = P{0, xs[i+1].level - 1}
 				explodedIdx = i
 			} else if xs[i].level == xs[i+1].level {
 				xs[i-1] = P{xs[i-1].value + xs[i].value, xs[i-1].level}
 				xs[i+2] = P{xs[i+2].value + xs[i+1].value, xs[i+2].level}
-				xs[i+1] = P{0, xs[i+1].level}
+				xs[i+1] = P{0, xs[i+1].level - 1}
 				explodedIdx = i
 			}
 			break
@@ -74,24 +74,10 @@ func Explode(ps []P) []P {
 	// If no exploded pair, return original array
 	if explodedIdx == -1 {
 		return xs
+	} else {
+		// Drop exploded pair
+		return append(xs[:explodedIdx], xs[explodedIdx+1:]...)
 	}
-	// Adjust levels downward
-	for i := explodedIdx + 1; i < len(xs); i++ {
-		if xs[i].level >= xs[explodedIdx].level {
-			xs[i].level--
-		} else {
-			break
-		}
-	}
-	for i := explodedIdx - 1; i >= 0; i-- {
-		if xs[i].level >= xs[explodedIdx].level {
-			xs[i].level--
-		} else {
-			break
-		}
-	}
-	// Drop exploded pair
-	return append(xs[:explodedIdx], xs[explodedIdx+1:]...)
 }
 
 func Split(ps []P) []P {
@@ -119,13 +105,13 @@ func Split(ps []P) []P {
 func ReduceOnce(ps []P) []P {
 	xs := make([]P, len(ps))
 	copy(xs, ps)
-	fmt.Printf("exploding...")
+	// fmt.Printf("exploding...")
 	exploded := Explode(xs)
 	if !reflect.DeepEqual(exploded, ps) {
-		fmt.Printf("ok\n")
+		// fmt.Printf("ok\n")
 		return exploded
 	} else {
-		fmt.Printf("nothing to do, splitting...\n")
+		// fmt.Printf("nothing to do, splitting...\n")
 		return Split(exploded)
 	}
 }
@@ -136,12 +122,12 @@ func Reduce(ps []P) []P {
 	prev := make([]P, len(ps))
 	copy(prev, ps)
 	var i int
-	fmt.Printf("Reducing:\n%v\n", ps)
+	// fmt.Printf("Reducing:\n%v\n", ps)
 	for {
-		fmt.Printf("Step %d: ", i)
+		// fmt.Printf("Step %d: ", i)
 		curr = ReduceOnce(curr)
 		if reflect.DeepEqual(prev, curr) {
-			fmt.Printf("\tDone after %d steps\n", i-1)
+			// fmt.Printf("\tDone after %d steps\n", i-1)
 			return curr
 		}
 		prev = make([]P, len(curr))
