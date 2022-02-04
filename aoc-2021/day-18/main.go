@@ -116,31 +116,96 @@ func Split(ps []P) []P {
 	return splitted
 }
 
-func Reduce(ps []P) []P {
-	reduced := make([]P, len(ps))
-	copy(reduced, ps)
-	for {
-		lastReduced := make([]P, len(reduced))
-		copy(lastReduced, reduced)
-		exploded := Explode(reduced)
-		reduced = Split(exploded)
-		if reflect.DeepEqual(reduced, lastReduced) {
-			break
-		}
+func ReduceOnce(ps []P) []P {
+	xs := make([]P, len(ps))
+	copy(xs, ps)
+	fmt.Printf("exploding...")
+	exploded := Explode(xs)
+	if !reflect.DeepEqual(exploded, ps) {
+		fmt.Printf("ok\n")
+		return exploded
+	} else {
+		fmt.Printf("nothing to do, splitting...\n")
+		return Split(exploded)
 	}
-	return reduced
+}
+
+func Reduce(ps []P) []P {
+	curr := make([]P, len(ps))
+	copy(curr, ps)
+	prev := make([]P, len(ps))
+	copy(prev, ps)
+	var i int
+	fmt.Printf("Reducing:\n%v\n", ps)
+	for {
+		fmt.Printf("Step %d: ", i)
+		curr = ReduceOnce(curr)
+		if reflect.DeepEqual(prev, curr) {
+			fmt.Printf("\tDone after %d steps\n", i-1)
+			return curr
+		}
+		prev = make([]P, len(curr))
+		copy(prev, curr)
+		i++
+	}
+}
+
+func ReduceList(xs [][]P) []P {
+	if len(xs) == 0 {
+		return make([]P, 0)
+	} else if len(xs) == 1 {
+		return xs[0]
+	} else {
+		sum := xs[0]
+		for _, x := range xs[1:] {
+			sum = Add(sum, x)
+			sum = Reduce(sum)
+		}
+		return sum
+	}
 }
 
 func main() {
-	// s1 := "[[[[[9,8],1],2],3],4]" // [[[[0,9],2],3],4]
-	// s1 := "[7,[6,[5,[4,[3,2]]]]]" // [7,[6,[5,[7,0]]]]
-	// s1 := "[[6,[5,[4,[3,2]]]],1]" // [[6,[5,[7,0]]],3]
-	// s1 := "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]" // [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
-	// s1 := "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]" // [[3,[2,[8,0]]],[9,[5,[7,0]]]]
-	// s1 := "[[[[0,7],4],[15,[0,13]]],[1,1]]" // [[[[0,7],4],[[7,8],[0,13]]],[1,1]]
-	// s1 := "[[[[0,7],4],[[7,8],[0,13]]],[1,1]]" // [[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]
-	s1 := "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]" // [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
-	xs := ParseInput(s1)
-	fmt.Printf("%v\n", xs)
-	fmt.Printf("%v\n", Reduce(xs))
+	l := []string{
+		"[1,1]",
+		"[2,2]",
+		"[3,3]",
+		"[4,4]",
+		"[5,5]",
+	}
+	xs := utils.Map(l, ParseInput)
+	result := ReduceList(xs)
+	fmt.Printf("%v\n", result)
+}
+
+func main2() {
+	s1 := "[[[[1,1],[2,2]],[3,3]],[4,4]]"
+	s2 := "[1,1]"
+	ps1 := ParseInput(s1)
+	ps2 := ParseInput(s2)
+	s12 := Add(ps1, ps2)
+	s12 = []P{P{1, 5}, P{1, 5}, P{2, 5}, P{2, 5}, P{3, 4}, P{3, 4}, P{4, 3}, P{4, 3}, P{5, 2}, P{5, 2}}
+	// fmt.Printf("%v\n", ps1)
+	// fmt.Printf("%v\n", ps2)
+	// fmt.Printf("Start:\n%v\n", s12)
+	// fmt.Printf("%v\n", ReduceOnce(s12))
+	// fmt.Printf("%v\n", ReduceOnce(s12))
+	fmt.Printf("%v\n", Reduce(s12))
+}
+
+func main1() {
+	lines, _ := utils.ReadLines("input-sample-1.txt")
+	// Parse lines
+	ps := make([][]P, len(lines))
+	for idx, line := range lines {
+		ps[idx] = ParseInput(line)
+		// fmt.Printf("%v\n", ps[idx])
+	}
+	// Add
+	sum := ps[0]
+	for _, p := range ps[1:] {
+		sum = Add(sum, p)
+		sum = ReduceOnce(sum)
+	}
+	fmt.Printf("%v\n", sum)
 }
