@@ -151,47 +151,31 @@ func ReduceList(xs [][]P) []P {
 	}
 }
 
+func Magnitude(ps []P) int {
+	xs := make([]P, len(ps))
+	copy(xs, ps)
+  var flag bool
+  for {
+    flag = true
+    for i:=0; i<len(xs)-1; i++ {
+      if xs[i].level == xs[i+1].level {
+        xs = append(
+          append(xs[:i], P{3*xs[i].value+2*xs[i+1].value, xs[i].level-1}),
+          xs[i+2:]...
+        )
+        flag = false
+        break
+      }
+    }
+    if flag { break }
+  }
+  return xs[0].value
+}
+
 func main() {
-	l := []string{
-		"[1,1]",
-		"[2,2]",
-		"[3,3]",
-		"[4,4]",
-		"[5,5]",
-	}
-	xs := utils.Map(l, ParseInput)
-	result := ReduceList(xs)
+	lines, _ := utils.ReadLines("input.txt")
+	xs := utils.Map(lines, ParseInput)
+  result := ReduceList(xs)
 	fmt.Printf("%v\n", result)
-}
-
-func main2() {
-	s1 := "[[[[1,1],[2,2]],[3,3]],[4,4]]"
-	s2 := "[1,1]"
-	ps1 := ParseInput(s1)
-	ps2 := ParseInput(s2)
-	s12 := Add(ps1, ps2)
-	s12 = []P{P{1, 5}, P{1, 5}, P{2, 5}, P{2, 5}, P{3, 4}, P{3, 4}, P{4, 3}, P{4, 3}, P{5, 2}, P{5, 2}}
-	// fmt.Printf("%v\n", ps1)
-	// fmt.Printf("%v\n", ps2)
-	// fmt.Printf("Start:\n%v\n", s12)
-	// fmt.Printf("%v\n", ReduceOnce(s12))
-	// fmt.Printf("%v\n", ReduceOnce(s12))
-	fmt.Printf("%v\n", Reduce(s12))
-}
-
-func main1() {
-	lines, _ := utils.ReadLines("input-sample-1.txt")
-	// Parse lines
-	ps := make([][]P, len(lines))
-	for idx, line := range lines {
-		ps[idx] = ParseInput(line)
-		// fmt.Printf("%v\n", ps[idx])
-	}
-	// Add
-	sum := ps[0]
-	for _, p := range ps[1:] {
-		sum = Add(sum, p)
-		sum = ReduceOnce(sum)
-	}
-	fmt.Printf("%v\n", sum)
+  fmt.Printf("Magnitude: %d\n", Magnitude(result))
 }
