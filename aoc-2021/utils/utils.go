@@ -41,3 +41,19 @@ func Max(a, b int) int {
     return b
   }
 }
+
+func Abs(x int) int {
+  if x > 0 { 
+    return x
+  } else {
+    return -x
+  }
+}
+
+func Map[T any, V any](arrT []T, f func(t T) V) []V {
+	arrV := make([]V, len(arrT))
+	for idx, t := range arrT {
+		arrV[idx] = f(t)
+	}
+	return arrV
+}
