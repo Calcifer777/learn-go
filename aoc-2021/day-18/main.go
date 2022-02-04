@@ -172,10 +172,48 @@ func Magnitude(ps []P) int {
   return xs[0].value
 }
 
-func main() {
+func LargestPairMagnitude(xs [][]P) int {
+  var largest int
+  for i := 0; i<len(xs); i++ {
+    for j := 0; j<len(xs); j++ {
+      if i == j {
+        continue
+      }
+      sum := Add(xs[i], xs[j])
+      reduced := Reduce(sum)
+      m := Magnitude(reduced)
+      if m > largest {
+        largest = m
+      }
+    }
+  }
+  return largest
+}
+
+func Part1() {
 	lines, _ := utils.ReadLines("input.txt")
 	xs := utils.Map(lines, ParseInput)
   result := ReduceList(xs)
-	fmt.Printf("%v\n", result)
-  fmt.Printf("Magnitude: %d\n", Magnitude(result))
+  fmt.Printf("Part 1 -> %d\n", Magnitude(result))
+}
+
+func Part2() {
+	lines, _ := utils.ReadLines("input.txt")
+	xs := utils.Map(lines, ParseInput)
+  result := LargestPairMagnitude(xs)
+  fmt.Printf("Part 2 -> %d\n", result)
+}
+
+func main() {
+  Part1()
+  Part2()
+}
+
+func main1() {
+  s1 := "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]"
+  s2 := "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]"
+  sum := Add(ParseInput(s1), ParseInput(s2))
+  reduced := Reduce(sum)
+  m := Magnitude(reduced)
+  fmt.Printf("Sum: %v\n", m)
 }
