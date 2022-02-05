@@ -28,6 +28,19 @@ func Filter[T any](arr []T, f func(t T) bool) []T {
 	return result
 }
 
+// Doesn't work when imported from a different package
+func Zip[A any, B any](ts []A, vs []B) []struct{ _1 A; _2 B } {
+  pairs := make([]struct{_1 A; _2 B }, 0)
+  if len(ts) != len(vs) {
+    panic("Different slice lengths")
+  }
+  for i:=0; i<len(ts); i++ {
+    pair := struct {_1 A; _2 B}{ ts[i], vs[i] }
+    pairs = append(pairs, pair)
+  }
+  return pairs
+}
+
 func main() {
 	fmt.Printf("Hello world\n")
 	arr := []int{1, 2, 3, 4, 5, 6, 7}
