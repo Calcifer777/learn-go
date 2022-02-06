@@ -2,7 +2,31 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
+	"go.uber.org/zap"
+  "io/ioutil"
 )
+
+var sugarLogger *zap.SugaredLogger
+
+func WithDevelopmentLogger() {
+  jsonFile, _ := ioutil.ReadFile("log-config.json")
+  var config zap.Config
+  if err := json.Unmarshal(jsonFile, &config); err != nil {
+    panic(err)
+  }
+	// config := zap.NewDevelopmentConfig()
+	logger, _ := config.Build()
+	sugarLogger = logger.Sugar()
+}
+
+func WithProductionLogger() {
+	config := zap.NewProductionConfig()
+	level := zap.NewAtomicLevelAt(zap.WarnLevel)
+	config.Level = level
+	logger, _ := config.Build()
+	sugarLogger = logger.Sugar()
+}
 
 type Player struct {
 	name  string
@@ -45,14 +69,14 @@ func (g *Game) PlayTurn() bool {
 	}
 	p.pos = ((p.pos + v - 1) % 10) + 1
 	p.score += p.pos
-	fmt.Printf("\t%s: rolled %d, moving to %d, score: %d\n", p.name, v, p.pos, p.score)
+	sugarLogger.Infof("%s: rolled %d, moving to %d, score: %d", p.name, v, p.pos, p.score)
 	p.turn += 1
 	g.next = (g.next % 2) + 1
 	return p.score >= 1000
 }
 
 func (g *Game) Play() int {
-	fmt.Printf("Starting game...\n")
+	sugarLogger.Infof("Starting game")
 	for {
 		won := g.PlayTurn()
 		if won {
@@ -89,6 +113,8 @@ func (g Game) String() string {
 }
 
 func main() {
+	WithDevelopmentLogger()
+	// WithProductionLogger()
 	game := Game{
 		p1:   Player{name: "P1", turn: 0, pos: 2, score: 0},
 		p2:   Player{name: "P2", turn: 0, pos: 7, score: 0},
