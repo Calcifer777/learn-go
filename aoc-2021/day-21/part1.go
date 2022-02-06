@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"go.uber.org/zap"
-  "io/ioutil"
+	"io/ioutil"
 )
 
 var sugarLogger *zap.SugaredLogger
 
 func WithDevelopmentLogger() {
-  jsonFile, _ := ioutil.ReadFile("log-config.json")
-  var config zap.Config
-  if err := json.Unmarshal(jsonFile, &config); err != nil {
-    panic(err)
-  }
+	jsonFile, _ := ioutil.ReadFile("log-config.json")
+	var config zap.Config
+	if err := json.Unmarshal(jsonFile, &config); err != nil {
+		panic(err)
+	}
 	// config := zap.NewDevelopmentConfig()
 	logger, _ := config.Build()
 	sugarLogger = logger.Sugar()
