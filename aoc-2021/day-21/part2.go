@@ -81,8 +81,7 @@ func (g DiracGame) String() string {
 	s += fmt.Sprintf("\tTurns: %d\n", g.turns)
 	s += fmt.Sprintf("\t%s at pos %d, score: %d\n", g.p1.name, g.p1.pos, g.p1.score)
 	s += fmt.Sprintf("\t%s at pos %d, score: %d\n", g.p2.name, g.p2.pos, g.p2.score)
-	s += fmt.Sprintf("\tTurn:\n")
-	s += fmt.Sprintf("\t\tPlayer      %s\n", g.onTurn.name)
+	s += fmt.Sprintf("\tOn the play: %s\n", g.onTurn.name)
 	return s
 }
 
