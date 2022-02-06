@@ -1,0 +1,15 @@
+{
+  "level": "warn",
+  "encoding": "json",
+  "outputPaths": [
+    "stdout"
+  ],
+  "errorOutputPaths": [
+    "stderr"
+  ],
+  "encoderConfig": {
+    "messageKey": "message",
+    "levelKey": "level",
+    "levelEncoder": "lowercase"
+  }
+}
