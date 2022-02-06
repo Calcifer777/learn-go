@@ -1,12 +1,21 @@
 package main
 
 import (
-	// "bufio"
 	"fmt"
-	// "os"
+	"go.uber.org/zap"
 )
 
 const winningScore = 21
+
+var sugarLogger *zap.SugaredLogger
+
+func SetupLogger() {
+	config := zap.NewDevelopmentConfig()
+	level := zap.NewAtomicLevelAt(zap.InfoLevel)
+	config.Level = level
+	logger, _ := config.Build()
+	sugarLogger = logger.Sugar()
+}
 
 // LIFO queue implementation
 type Queue struct {
@@ -57,7 +66,7 @@ type DiracGame struct {
 	turns        int
 	currentRolls int
 	status       GameStatus
-  weight       int64
+	weight       int64
 }
 
 func (g DiracGame) String() string {
@@ -82,57 +91,57 @@ func (g DiracGame) PlayTurn(v int, weight int64) DiracGame {
 	p2 := g.p2
 	status := g.status
 	turns := g.turns
-  weight = g.weight * weight
-  // Select player on the play
+	weight = g.weight * weight
+	// Select player on the play
 	var onTurn *Player
 	if g.onTurn.name == p1.name {
 		onTurn = &p1
 	} else {
 		onTurn = &p2
 	}
-  // Get new position and score
-  onTurn.pos = ((onTurn.pos + v - 1) % 10) + 1
-  onTurn.score += onTurn.pos
-  // Update game status
-  if onTurn.score >= winningScore {
-    status = Done
-  }
-  // Update player on the play
-  if *onTurn == p1 {
-    onTurn = &p2
-  } else if *onTurn == p2 {
-    onTurn = &p1
-  } else {
-    panic("Unreachable: can't switch turns")
-  }
-  turns += 1
-  // Return new game status
+	// Get new position and score
+	onTurn.pos = ((onTurn.pos + v - 1) % 10) + 1
+	onTurn.score += onTurn.pos
+	// Update game status
+	if onTurn.score >= winningScore {
+		status = Done
+	}
+	// Update player on the play
+	if *onTurn == p1 {
+		onTurn = &p2
+	} else if *onTurn == p2 {
+		onTurn = &p1
+	} else {
+		panic("Unreachable: can't switch turns")
+	}
+	turns += 1
+	// Return new game status
 	newGame := DiracGame{
-		p1:           p1,
-		p2:           p2,
-		status:       status,
-		turns:        turns,
-		onTurn:       onTurn,
-		weight:       weight,
+		p1:     p1,
+		p2:     p2,
+		status: status,
+		turns:  turns,
+		onTurn: onTurn,
+		weight: weight,
 	}
 	return newGame
 }
 
 func PlayDiracTurn(g DiracGame) []DiracGame {
 	newGames := make([]DiracGame, 7)
-  rollOutcomes := map[int]int64 {
-    3: 1,
-    4: 3,
-    5: 6,
-    6: 7,
-    7: 6,
-    8: 3,
-    9: 1,
-  }
-  idx := 0
-  for rollValue, weight := range rollOutcomes {
+	rollOutcomes := map[int]int64{
+		3: 1,
+		4: 3,
+		5: 6,
+		6: 7,
+		7: 6,
+		8: 3,
+		9: 1,
+	}
+	idx := 0
+	for rollValue, weight := range rollOutcomes {
 		newGames[idx] = g.PlayTurn(rollValue, weight)
-    idx++
+		idx++
 	}
 	return newGames
 }
@@ -145,41 +154,41 @@ const (
 )
 
 func main() {
-	p1 := Player{name: "Player 1", pos: 4, score: 0}
-	p2 := Player{name: "Player 2", pos: 8, score: 0}
+	SetupLogger()
+	p1 := Player{name: "Player 1", pos: 2, score: 0}
+	p2 := Player{name: "Player 2", pos: 7, score: 0}
 	start := DiracGame{
-		p1:           p1,
-		p2:           p2,
-		status:       InProgress,
-		turns:        0,
-		onTurn:       &p1,
-		weight:       1,
+		p1:     p1,
+		p2:     p2,
+		status: InProgress,
+		turns:  0,
+		onTurn: &p1,
+		weight: 1,
 	}
 	gamesQueue := Queue{&start, nil}
 	var game *DiracGame
 	var p1Wins, p2Wins int64
 	var i int
-	// for i := 0; i < 10e7; i++ {
 	for {
 		if !gamesQueue.HasNext() {
 			break
 		}
 		gamesQueue, game = gamesQueue.Pop()
-		// fmt.Printf("Expanding\n%s\n", *game)
+		sugarLogger.Debugf("Expanding\n%s\n", *game)
 		for _, g := range PlayDiracTurn(*game) {
 			switch g.status {
 			case InProgress:
 				{
-					// fmt.Printf("Pushing\n%s\n", g)
+					sugarLogger.Debugf("Pushing\n%s\n", g)
 					gamesQueue = gamesQueue.Push(g)
 				}
 			case Done:
 				{
 					if g.p1.score >= winningScore {
-						// fmt.Printf("Player 1 wins!\n")
+						sugarLogger.Debugf("Player 1 wins!\n")
 						p1Wins += g.weight
 					} else if g.p2.score >= winningScore {
-						// fmt.Printf("Player 2 wins with score %d!\n", g.p2.score)
+						sugarLogger.Debugf("Player 2 wins with score %d!\n", g.p2.score)
 						p2Wins += g.weight
 					} else {
 						panic("unreachable")
@@ -190,12 +199,9 @@ func main() {
 			}
 		}
 		if i%10e5 == 0 {
-			fmt.Printf("Queue size: %d\n", gamesQueue.Size())
-			fmt.Printf("Player1 wins: %d\n", p1Wins)
-			fmt.Printf("Player2 wins: %d\n", p2Wins)
-			fmt.Printf("\n")
+			sugarLogger.Infof("P1 wins: %15d, P2 wins: %15d, Queue size: %d", p1Wins, p2Wins, gamesQueue.Size())
 		}
 		i++
 	}
-
+	sugarLogger.Infof("P1 wins: %15d, P2 wins: %15d, Queue size: %d", p1Wins, p2Wins, gamesQueue.Size())
 }
