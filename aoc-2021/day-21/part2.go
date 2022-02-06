@@ -56,8 +56,8 @@ type DiracGame struct {
 	onTurn       *Player
 	turns        int
 	currentRolls int
-	turnValue    int
 	status       GameStatus
+  weight       int64
 }
 
 func (g DiracGame) String() string {
@@ -74,58 +74,65 @@ func (g DiracGame) String() string {
 	s += fmt.Sprintf("\t%s at pos %d, score: %d\n", g.p2.name, g.p2.pos, g.p2.score)
 	s += fmt.Sprintf("\tTurn:\n")
 	s += fmt.Sprintf("\t\tPlayer      %s\n", g.onTurn.name)
-	s += fmt.Sprintf("\t\tRolls       %d\n", g.currentRolls)
-	s += fmt.Sprintf("\t\tTurn value  %d\n", g.turnValue)
 	return s
 }
 
-func (g DiracGame) PlayTurn(v int) DiracGame {
+func (g DiracGame) PlayTurn(v int, weight int64) DiracGame {
 	p1 := g.p1
 	p2 := g.p2
-	turnValue := g.turnValue + v
-	currentRolls := g.currentRolls + 1
 	status := g.status
 	turns := g.turns
+  weight = g.weight * weight
+  // Select player on the play
 	var onTurn *Player
 	if g.onTurn.name == p1.name {
 		onTurn = &p1
 	} else {
 		onTurn = &p2
 	}
-
-	if currentRolls == 3 {
-		onTurn.pos = ((onTurn.pos + turnValue - 1) % 10) + 1
-		onTurn.score += onTurn.pos
-		turnValue = 0
-		currentRolls = 0
-		if onTurn.score >= winningScore {
-			status = Done
-		}
-		if *onTurn == p1 {
-			onTurn = &p2
-		} else if *onTurn == p2 {
-			onTurn = &p1
-		} else {
-			panic("Unreachable: can't switch turns")
-		}
-		turns += 1
-	}
+  // Get new position and score
+  onTurn.pos = ((onTurn.pos + v - 1) % 10) + 1
+  onTurn.score += onTurn.pos
+  // Update game status
+  if onTurn.score >= winningScore {
+    status = Done
+  }
+  // Update player on the play
+  if *onTurn == p1 {
+    onTurn = &p2
+  } else if *onTurn == p2 {
+    onTurn = &p1
+  } else {
+    panic("Unreachable: can't switch turns")
+  }
+  turns += 1
+  // Return new game status
 	newGame := DiracGame{
 		p1:           p1,
 		p2:           p2,
 		status:       status,
 		turns:        turns,
 		onTurn:       onTurn,
-		turnValue:    turnValue,
-		currentRolls: currentRolls,
+		weight:       weight,
 	}
 	return newGame
 }
 
 func PlayDiracTurn(g DiracGame) []DiracGame {
-	newGames := make([]DiracGame, 3)
-	for i := 1; i <= 3; i++ {
-		newGames[i-1] = g.PlayTurn(i)
+	newGames := make([]DiracGame, 7)
+  rollOutcomes := map[int]int64 {
+    3: 1,
+    4: 3,
+    5: 6,
+    6: 7,
+    7: 6,
+    8: 3,
+    9: 1,
+  }
+  idx := 0
+  for rollValue, weight := range rollOutcomes {
+		newGames[idx] = g.PlayTurn(rollValue, weight)
+    idx++
 	}
 	return newGames
 }
@@ -138,22 +145,21 @@ const (
 )
 
 func main() {
-	p1 := Player{name: "Player 1", pos: 2, score: 0}
-	p2 := Player{name: "Player 2", pos: 7, score: 0}
+	p1 := Player{name: "Player 1", pos: 4, score: 0}
+	p2 := Player{name: "Player 2", pos: 8, score: 0}
 	start := DiracGame{
 		p1:           p1,
 		p2:           p2,
 		status:       InProgress,
 		turns:        0,
 		onTurn:       &p1,
-		turnValue:    0,
-		currentRolls: 0,
+		weight:       1,
 	}
 	gamesQueue := Queue{&start, nil}
 	var game *DiracGame
-	var p1Wins, p2Wins int
-	// for i := 0; i < 10e7; i++ {
+	var p1Wins, p2Wins int64
 	var i int
+	// for i := 0; i < 10e7; i++ {
 	for {
 		if !gamesQueue.HasNext() {
 			break
@@ -171,10 +177,10 @@ func main() {
 				{
 					if g.p1.score >= winningScore {
 						// fmt.Printf("Player 1 wins!\n")
-						p1Wins += 1
+						p1Wins += g.weight
 					} else if g.p2.score >= winningScore {
 						// fmt.Printf("Player 2 wins with score %d!\n", g.p2.score)
-						p2Wins += 1
+						p2Wins += g.weight
 					} else {
 						panic("unreachable")
 					}
@@ -183,13 +189,11 @@ func main() {
 				panic("unreachable")
 			}
 		}
-		// fmt.Printf("Go next?")
-		// input := bufio.NewScanner(os.Stdin)
-		// input.Scan()
-		if i%10e6 == 0 {
+		if i%10e5 == 0 {
 			fmt.Printf("Queue size: %d\n", gamesQueue.Size())
 			fmt.Printf("Player1 wins: %d\n", p1Wins)
 			fmt.Printf("Player2 wins: %d\n", p2Wins)
+			fmt.Printf("\n")
 		}
 		i++
 	}
