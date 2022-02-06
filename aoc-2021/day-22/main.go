@@ -47,7 +47,87 @@ func ParseInput(lines []string) []Cube {
 	return cubes
 }
 
+func Btoi(b bool) int {
+	if b {
+		return 1
+	} else {
+		return -1
+	}
+}
+
+func Intersection(c1, c2 Cube) int64 {
+  // fmt.Printf("%+v\n", c1)
+  // fmt.Printf("%+v\n", c2)
+	var x, y, z int64
+	var fst, snd Cube
+	// X
+	if c1.minX < c2.minX {
+		fst = c1
+		snd = c2
+	} else {
+    fst = c2
+    snd = c1
+  }
+	if fst.maxX < snd.minX {
+		return 0
+	} else if fst.minX <= snd.minX && fst.maxX >= snd.minX && fst.maxX <= snd.maxX {
+		x = int64(fst.maxX - snd.minX + 1)
+	} else if fst.maxX > snd.maxX {
+		x = int64(snd.maxX - snd.minX + 1)
+	}
+	// Y
+	if c1.minY < c2.minY {
+		fst = c1
+		snd = c2
+	}
+	if fst.maxY < snd.minY {
+		return 0
+	} else if fst.minY <= snd.minY && fst.maxY >= snd.minY && fst.maxY <= snd.maxY {
+		y = int64(fst.maxY - snd.minY + 1)
+	} else if fst.maxY > snd.maxY {
+		y = int64(snd.maxY - snd.minY + 1)
+	}
+	// Z
+	if c1.minZ < c2.minZ {
+		fst = c1
+		snd = c2
+	}
+	if fst.maxZ < snd.minZ {
+		return 0
+	} else if fst.minZ <= snd.minZ && fst.maxZ >= snd.minZ && fst.maxZ <= snd.maxZ {
+		z = int64(fst.maxZ - snd.minZ + 1)
+	} else if fst.maxZ > snd.maxZ {
+		z = int64(snd.maxZ - snd.minZ + 1)
+	}
+	return int64(x * y * z)
+}
+
 func main() {
+	lines, _ := utils.ReadLines("input-sample-3.txt")
+	cubes := ParseInput(lines)
+  // fmt.Printf("%d\n", Intersection(cubes[0], cubes[0]))
+  intersections := make([][]int64, len(cubes))
+  for i := 0; i < len(cubes); i++ {
+    intersections[i] = make([]int64, len(cubes))
+    for j := 0; j < len(cubes); j++ {
+      intersections[i][j] = Intersection(cubes[i], cubes[j])
+    }
+  }
+  fmt.Printf("%v\n", intersections)
+}
+
+func Part2() {
+	lines, _ := utils.ReadLines("input-sample-1.txt")
+	cubes := ParseInput(lines)
+	var num int64
+	for _, c := range cubes {
+		fmt.Printf("%v\n", c)
+		num += int64(Btoi(bool(c.action)) * (c.maxX - c.minX) * (c.maxY - c.minY) * (c.maxY - c.minY))
+	}
+	fmt.Printf("Num cubes on %d\n", num)
+}
+
+func Part1() {
 	lines, _ := utils.ReadLines("input.txt")
 	cubes := ParseInput(lines)
 	for _, c := range cubes {
