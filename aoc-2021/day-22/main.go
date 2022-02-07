@@ -47,7 +47,7 @@ func ParseInput(lines []string) []Cube {
 	return cubes
 }
 
-func Btoi(b bool) int {
+func Btoi(b bool) int64 {
 	if b {
 		return 1
 	} else {
@@ -55,84 +55,77 @@ func Btoi(b bool) int {
 	}
 }
 
-func Intersection(c1, c2 Cube) int64 {
-  // fmt.Printf("%+v\n", c1)
-  // fmt.Printf("%+v\n", c2)
-	var x, y, z int64
-	var fst, snd Cube
-	// X
-	if c1.minX < c2.minX {
-		fst = c1
-		snd = c2
-	} else {
-    fst = c2
-    snd = c1
-  }
-	if fst.maxX < snd.minX {
-		return 0
-	} else if fst.minX <= snd.minX && fst.maxX >= snd.minX && fst.maxX <= snd.maxX {
-		x = int64(fst.maxX - snd.minX + 1)
-	} else if fst.maxX > snd.maxX {
-		x = int64(snd.maxX - snd.minX + 1)
+func Intersection(c1, c2 Cube) *Cube {
+	if !(c1.minX <= c2.maxX && c1.maxX >= c2.minX) {
+		return nil
 	}
-	// Y
-	if c1.minY < c2.minY {
-		fst = c1
-		snd = c2
+	if !(c1.minY <= c2.maxY && c1.maxY >= c2.minY) {
+		return nil
 	}
-	if fst.maxY < snd.minY {
-		return 0
-	} else if fst.minY <= snd.minY && fst.maxY >= snd.minY && fst.maxY <= snd.maxY {
-		y = int64(fst.maxY - snd.minY + 1)
-	} else if fst.maxY > snd.maxY {
-		y = int64(snd.maxY - snd.minY + 1)
+	if !(c1.minZ <= c2.maxZ && c1.maxZ >= c2.minZ) {
+		return nil
 	}
-	// Z
-	if c1.minZ < c2.minZ {
-		fst = c1
-		snd = c2
+	minX := utils.Max(c1.minX, c2.minX)
+	maxX := utils.Min(c1.maxX, c2.maxX)
+	minY := utils.Max(c1.minY, c2.minY)
+	maxY := utils.Min(c1.maxY, c2.maxY)
+	minZ := utils.Max(c1.minZ, c2.minZ)
+	maxZ := utils.Min(c1.maxZ, c2.maxZ)
+	var action = Btoi(bool(c1.action)) * Btoi(bool(c2.action))
+	if c1.action == c2.action {
+		action = -Btoi(bool(c1.action))
+	} else if c1.action == SetOn && c2.action == SetOff {
+		action = 1
 	}
-	if fst.maxZ < snd.minZ {
-		return 0
-	} else if fst.minZ <= snd.minZ && fst.maxZ >= snd.minZ && fst.maxZ <= snd.maxZ {
-		z = int64(fst.maxZ - snd.minZ + 1)
-	} else if fst.maxZ > snd.maxZ {
-		z = int64(snd.maxZ - snd.minZ + 1)
+	var bAction Action = false
+	if action == 1 {
+		bAction = true
 	}
-	return int64(x * y * z)
+	return &Cube{
+		action: bAction,
+		minX:   minX,
+		maxX:   maxX,
+		minY:   minY,
+		maxY:   maxY,
+		minZ:   minZ,
+		maxZ:   maxZ,
+	}
 }
 
-func main() {
-	lines, _ := utils.ReadLines("input-sample-3.txt")
-	cubes := ParseInput(lines)
-  // fmt.Printf("%d\n", Intersection(cubes[0], cubes[0]))
-  intersections := make([][]int64, len(cubes))
-  for i := 0; i < len(cubes); i++ {
-    intersections[i] = make([]int64, len(cubes))
-    for j := 0; j < len(cubes); j++ {
-      intersections[i][j] = Intersection(cubes[i], cubes[j])
-    }
-  }
-  fmt.Printf("%v\n", intersections)
+func (c Cube) Volume() int64 {
+	return int64((c.maxX - c.minX + 1) * (c.maxY - c.minY + 1) * (c.maxZ - c.minZ + 1))
 }
 
 func Part2() {
-	lines, _ := utils.ReadLines("input-sample-1.txt")
-	cubes := ParseInput(lines)
-	var num int64
-	for _, c := range cubes {
-		fmt.Printf("%v\n", c)
-		num += int64(Btoi(bool(c.action)) * (c.maxX - c.minX) * (c.maxY - c.minY) * (c.maxY - c.minY))
+	lines, _ := utils.ReadLines("input.txt")
+	cubes := make([]Cube, 0)
+	for _, newCube := range ParseInput(lines) {
+		is := make([]Cube, 0)
+		for _, oldCube := range cubes {
+			i := Intersection(newCube, oldCube)
+			if i != nil {
+				is = append(is, *i)
+			}
+		}
+		for _, i := range is {
+			cubes = append(cubes, i)
+		}
+		if newCube.action == SetOn {
+			cubes = append(cubes, newCube)
+		}
 	}
-	fmt.Printf("Num cubes on %d\n", num)
+
+	var num int64
+	for _, cube := range cubes {
+		volume := Btoi(bool(cube.action)) * cube.Volume()
+		num += volume
+	}
+	fmt.Printf("Part 2 -> %v\n", num)
 }
 
 func Part1() {
 	lines, _ := utils.ReadLines("input.txt")
 	cubes := ParseInput(lines)
-	for _, c := range cubes {
-		fmt.Printf("%v\n", c)
-	}
 	num := 0
 	for x := -50; x <= 50; x++ {
 		for y := -50; y <= 50; y++ {
@@ -149,5 +142,10 @@ func Part1() {
 			}
 		}
 	}
-	fmt.Printf("Num cubes on %d\n", num)
+	fmt.Printf("Part 1 -> %d\n", num)
+}
+
+func main() {
+	Part1()
+	Part2()
 }
