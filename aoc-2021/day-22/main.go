@@ -1,3 +1,4 @@
+// Solution from https://github.com/iskyd/advent-of-code-julia/blob/main/2021/day22/main.jl
 package main
 
 import (
