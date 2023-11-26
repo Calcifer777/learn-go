@@ -7,16 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	MAX_CONCURRENCY = 4
+)
+
 var queue JobQueue = make(chan int)
 var worker_pool = WorkerPool{
-	concurrency: 3,
+	concurrency: MAX_CONCURRENCY,
 	Queue:       queue,
+	// set ouputs queue to nil, so we don't have to dequeue the messages
+}
+
+func main_web() {
+	r := CreateApp()
+	r.Run()
 }
 
 func CreateApp() *gin.Engine {
+	go func() { worker_pool.Run() }()
+
 	r := gin.Default()
 	r.GET("/health", health)
-	r.POST("/greet", greet)
+	r.POST("/user", create_user)
 	return r
 }
 
@@ -27,7 +39,7 @@ func health(ctx *gin.Context) {
 	)
 }
 
-func greet(ctx *gin.Context) {
+func create_user(ctx *gin.Context) {
 	var user User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.IndentedJSON(
@@ -36,6 +48,8 @@ func greet(ctx *gin.Context) {
 		)
 		return
 	}
+
+	worker_pool.Queue <- user.Id
 
 	ctx.IndentedJSON(
 		http.StatusOK,

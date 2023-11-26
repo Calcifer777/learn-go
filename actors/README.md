@@ -6,3 +6,8 @@
 - Closing Channels in Go: A Comprehensive Guide: https://towardsdev.com/closing-channels-in-go-a-comprehensive-guide-e389929f2b23
 - Handling 1 Million Requests per Minute with Go: http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/
 - Producer-consumer pattern implementation with Golang: https://medium.com/hdac/producer-consumer-pattern-implementation-with-golang-6ac412cf941c
+
+## Background tasks
+
+- Background task processor in Go with persistence support using BadgerDB: https://prasanthmj.github.io/go/go-task-queue-with-badgerdb-backend/
+- Background Tasks in Go: https://ayada.dev/posts/background-tasks-in-go/

@@ -24,15 +24,18 @@ func (p *WorkerPool) Run() {
 					fmt.Println(err)
 					continue
 				}
-				p.Results <- out
+				if p.Results != nil {
+					p.Results <- out
+				}
 			}
 		}(i)
 	}
 }
 
 func work_it(wid, payload int) (int, error) {
-	fmt.Printf("Worker %d received payload %d\n", wid, payload)
+	fmt.Printf("Worker %d: received payload %d\n", wid, payload)
 	time.Sleep(time.Millisecond * 1500)
+	fmt.Printf("Worker %d: done\n", wid)
 	return payload, nil
 }
 
