@@ -10,7 +10,7 @@ import (
 
 // Part1 ...
 func Part1() {
-	file, err := os.Open("data/day1/part1/full.txt")
+	file, err := os.Open("data/day1/full.txt")
 	if err != nil {
 		slog.Error("Error in reading file", slog.Any("err", err))
 		panic(err)
