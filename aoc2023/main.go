@@ -43,6 +43,11 @@ func main() {
 		fmt.Printf("Error: Day %d\n", *day)
 	}
 
-	slog.Warn("Success", slog.Int("day", *day), slog.Int("part", *part), slog.Int("Result", out))
+	slog.Warn(
+		"Success",
+		slog.Int("day", *day),
+		slog.Int("part", *part),
+		slog.Int("result", out),
+	)
 
 }
