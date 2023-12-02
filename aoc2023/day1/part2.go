@@ -54,8 +54,7 @@ func parseLine(line string) []int {
 }
 
 // Part2 ...
-func Part2() {
-	path := "data/day1/full.txt"
+func Part2(path string) int {
 	file, err := os.Open(path)
 	checkErr(err)
 	defer file.Close()
@@ -65,7 +64,7 @@ func Part2() {
 	for scanner.Scan() {
 		nums := parseLine(scanner.Text())
 		n := nums[0]*10 + nums[len(nums)-1]
-		fmt.Printf("Line digits value is: %d\n", n)
+		slog.Debug(fmt.Sprintf("Line digits value is: %d\n", n))
 		arr = append(arr, n)
 	}
 
@@ -73,5 +72,6 @@ func Part2() {
 	for _, i := range arr {
 		total += i
 	}
-	fmt.Printf("%v\n", total)
+	slog.Debug(fmt.Sprintf("%v\n", total))
+	return total
 }

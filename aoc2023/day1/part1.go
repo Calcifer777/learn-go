@@ -9,8 +9,8 @@ import (
 )
 
 // Part1 ...
-func Part1() {
-	file, err := os.Open("data/day1/full.txt")
+func Part1(path string) int {
+	file, err := os.Open(path)
 	if err != nil {
 		slog.Error("Error in reading file", slog.Any("err", err))
 		panic(err)
@@ -25,13 +25,14 @@ func Part1() {
 			if i, err := strconv.Atoi(string(ch)); err == nil {
 				nums = append(nums, i)
 			}
-			// fmt.Printf("%v\n", nums)
 		}
+		slog.Debug("Nums: ", slog.Any("nums", nums))
 		arr = append(arr, nums[0]*10+nums[len(nums)-1])
 	}
 	sum := 0
 	for _, i := range arr {
 		sum += i
 	}
-	fmt.Printf("The sum is: %v\n", sum)
+	slog.Debug(fmt.Sprintf("The sum is: %v\n", sum))
+	return sum
 }

@@ -1,10 +1,14 @@
 package main
 
 import (
-	// "github.com/calcifer777/aoc2023/day1"
-	"github.com/calcifer777/aoc2023/day2"
+	"log/slog"
+	"os"
 )
 
 func main() {
-	day2.Part2()
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelWarn,
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
 }

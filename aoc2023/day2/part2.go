@@ -2,19 +2,20 @@ package day2
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 )
 
 // Part2 ...
-func Part2() {
-	file, err := os.Open("data/day2/full.txt")
+func Part2(path string) int {
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
 	games := parseFile(file)
-	fmt.Printf("Num. games parsed: %d\n", len(games))
+	slog.Debug(fmt.Sprintf("Num. games parsed: %d\n", len(games)))
 	bags := make([]Bag, 0)
 	for _, g := range games {
 		bag := Bag{
@@ -40,7 +41,8 @@ func Part2() {
 	for idx, b := range bags {
 		power := b["red"] * b["green"] * b["blue"]
 		sum += power
-		fmt.Printf("%d: power %d\n", idx, power)
+		slog.Debug(fmt.Sprintf("%d: power %d\n", idx, power))
 	}
-	fmt.Printf("Sum: %d\n", sum)
+	slog.Debug(fmt.Sprintf("Sum: %d\n", sum))
+	return sum
 }
