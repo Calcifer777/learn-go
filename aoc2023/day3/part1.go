@@ -10,52 +10,45 @@ import (
 )
 
 type Num struct {
-	N      int
-	Xstart int
-	Xend   int
-	Y      int
+	v        int
+	colStart int
+	colEnd   int
+	row      int
 }
 
-func NewNumber(chars []rune, xStart int, Xend int, y int) (*Num, error) {
+func NewNumber(chars []rune, colStart int, colEnd int, row int) (*Num, error) {
 	n, e := strconv.Atoi(string(chars))
 	if e != nil {
 		return nil, e
 	}
-	return &Num{n, xStart, Xend, y}, nil
+	return &Num{n, colStart, colEnd, row}, nil
 }
 
 type Sym struct {
-	V string
-	X int
-	Y int
+	v   string
+	col int
+	row int
 }
 
 func ParseFile(f *os.File) ([]Num, []Sym, error) {
 	buf := bufio.NewScanner(f)
 	acc := make([]rune, 0)
-	var xStart, numLen int
 	numbers := make([]Num, 0)
 	symbols := make([]Sym, 0)
 	row := 0
 	for buf.Scan() {
 		line := buf.Text()
 		slog.Debug(line)
-		xStart, numLen = -1, 0
 		for col, ch := range line {
 			if unicode.IsDigit(ch) {
-				if len(acc) == 0 {
-					xStart = col
-				}
-				numLen += 1
 				acc = append(acc, ch)
 			} else {
 				if len(acc) > 0 {
-					newN, e := NewNumber(acc, xStart, xStart+numLen, row)
+					newN, e := NewNumber(acc, col-len(acc), col, row)
 					if e != nil {
 						return nil, nil, e
 					}
 					numbers = append(numbers, *newN)
-					xStart, numLen = -1, 0
 					acc = make([]rune, 0)
 				}
 				if ch == '.' {
@@ -66,12 +59,12 @@ func ParseFile(f *os.File) ([]Num, []Sym, error) {
 			}
 		}
 		if len(acc) > 0 {
-			newN, e := NewNumber(acc, xStart, xStart+numLen, row)
+			col := len(line) - 1
+			newN, e := NewNumber(acc, col-len(acc), col, row)
 			if e != nil {
 				return nil, nil, e
 			}
 			numbers = append(numbers, *newN)
-			xStart, numLen = -1, 0
 			acc = make([]rune, 0)
 		}
 		row += 1
@@ -81,8 +74,8 @@ func ParseFile(f *os.File) ([]Num, []Sym, error) {
 
 func filterN(n Num, syms []Sym) bool {
 	for _, s := range syms {
-		checkX := (n.Xend+1 >= s.X) && (n.Xstart-1 <= s.X)
-		checkY := (n.Y >= s.Y-1) && (n.Y <= s.Y+1)
+		checkX := (n.colEnd+1 >= s.col) && (n.colStart-1 <= s.col)
+		checkY := (n.row >= s.row-1) && (n.row <= s.row+1)
 		slog.Debug(fmt.Sprintf("%v - %v - X: %v, Y: %v", n, s, checkX, checkY))
 		if checkX && checkY {
 			return true
@@ -123,7 +116,7 @@ func Part1(path string) (int, error) {
 	sum := 0
 	for _, n := range sel {
 		slog.Debug(fmt.Sprintf("%v", n))
-		sum += n.N
+		sum += n.v
 	}
 	return sum, nil
 }

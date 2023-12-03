@@ -26,7 +26,7 @@ func TestDay3Part1Full(t *testing.T) {
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
-	// t.Skip("Skip for now")
+	t.Skip("Skip for now")
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
 	expected := -1
