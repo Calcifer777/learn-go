@@ -72,12 +72,19 @@ func ParseFile(f *os.File) ([]Num, []Sym, error) {
 	return numbers, symbols, nil
 }
 
+func isAdjacent(n Num, s Sym) bool {
+	checkX := (n.colEnd+1 >= s.col) && (n.colStart-1 <= s.col)
+	checkY := (n.row >= s.row-1) && (n.row <= s.row+1)
+	slog.Debug(fmt.Sprintf("%v - %v - X: %v, Y: %v", n, s, checkX, checkY))
+	if checkX && checkY {
+		return true
+	}
+	return false
+}
+
 func filterN(n Num, syms []Sym) bool {
 	for _, s := range syms {
-		checkX := (n.colEnd+1 >= s.col) && (n.colStart-1 <= s.col)
-		checkY := (n.row >= s.row-1) && (n.row <= s.row+1)
-		slog.Debug(fmt.Sprintf("%v - %v - X: %v, Y: %v", n, s, checkX, checkY))
-		if checkX && checkY {
+		if isAdjacent(n, s) {
 			return true
 		}
 	}
@@ -119,4 +126,60 @@ func Part1(path string) (int, error) {
 		sum += n.v
 	}
 	return sum, nil
+}
+
+func Part2(path string) (int, error) {
+	f, e := os.Open(path)
+	if e != nil {
+		slog.Error(fmt.Sprintf("Cound not open file at %s", path))
+		return -1, e
+	}
+	defer f.Close()
+	ns, syms, e := ParseFile(f)
+	if e != nil {
+		slog.Error(fmt.Sprintf("Cound not parse file: %v", e))
+		return -1, e
+	}
+	for _, n := range ns {
+		slog.Debug(fmt.Sprintf("%v", n))
+	}
+	for _, s := range syms {
+		slog.Debug(fmt.Sprintf("%v", s))
+	}
+	gears := filterGears(syms, ns)
+	sum := 0
+	for _, g := range gears {
+		slog.Debug(fmt.Sprintf("%v", g))
+		sum += g.v1.v * g.v2.v
+	}
+	return sum, nil
+}
+
+type Gear struct {
+	v1, v2 Num
+}
+
+func getGear(sym Sym, ns []Num) (*Gear, bool) {
+	adj := make([]Num, 0)
+	for _, n := range ns {
+		if isAdjacent(n, sym) {
+			adj = append(adj, n)
+		}
+	}
+	if len(adj) == 2 {
+		return &Gear{adj[0], adj[1]}, true
+	} else {
+		return nil, false
+	}
+}
+
+func filterGears(syms []Sym, ns []Num) []Gear {
+	gears := make([]Gear, 0)
+	for _, s := range syms {
+		gear, ok := getGear(s, ns)
+		if ok {
+			gears = append(gears, *gear)
+		}
+	}
+	return gears
 }
