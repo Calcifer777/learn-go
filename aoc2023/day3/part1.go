@@ -44,7 +44,7 @@ func ParseFile(f *os.File) ([]Num, []Sym, error) {
 				acc = append(acc, ch)
 			} else {
 				if len(acc) > 0 {
-					newN, e := NewNumber(acc, col-len(acc), col, row)
+					newN, e := NewNumber(acc, col-len(acc), col-1, row)
 					if e != nil {
 						return nil, nil, e
 					}

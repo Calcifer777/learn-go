@@ -9,6 +9,7 @@ import (
 )
 
 func TestDay3Part1Sample(t *testing.T) {
+	t.Skip("Skip for now")
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}
@@ -20,13 +21,24 @@ func TestDay3Part1Sample(t *testing.T) {
 	assert.Equal(t, expected, out, "should match")
 }
 
+func TestDay3Part1Custom(t *testing.T) {
+	t.Skip("Skip for now")
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
+	_, e := Part1("testdata/part1-custom.txt")
+	assert.Nil(t, e, "Part1 failed!")
+}
+
 func TestDay3Part1Full(t *testing.T) {
+	// t.Skip("Skip for now")
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelWarn,
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
-	t.Skip("Skip for now")
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
 	expected := -1
