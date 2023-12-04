@@ -37,6 +37,41 @@ func Part1(path string) (int, error) {
 	return sum, nil
 }
 
+func Part2(path string) (int, error) {
+	f, e := os.Open(path)
+	if e != nil {
+		slog.Error(fmt.Sprintf("Cound not open file at %s", path))
+		return -1, e
+	}
+	defer f.Close()
+	games, e := parseFile(f)
+	if e != nil {
+		slog.Error(fmt.Sprintf("Cound not parse file: %v", e))
+		return -1, e
+	}
+	scratch := make(map[int]int)
+	for _, g := range games {
+		scratch[g.id] += 1
+		slog.Debug(
+			"Game parsing output",
+			slog.String("Game", fmt.Sprintf("%v", *g)),
+		)
+		winning := getScorePart2(g)
+		for _, w := range winning {
+			scratch[w] += scratch[g.id]
+		}
+		slog.Debug(
+			"Output",
+			slog.Any("Scratch", scratch),
+		)
+	}
+	sum := 0
+	for _, v := range scratch {
+		sum += v
+	}
+	return sum, nil
+}
+
 type Game struct {
 	id      int
 	winning []int
@@ -112,4 +147,20 @@ func getScore(g *Game) int {
 		}
 	}
 	return score
+}
+
+func getScorePart2(g *Game) []int {
+	correct := make([]int, 0)
+	for _, n := range g.played {
+	inner:
+		for _, w := range g.winning {
+			if n == w {
+				toAppend := g.id + 1 + len(correct)
+				slog.Debug(fmt.Sprintf("Got scratch: %d", toAppend))
+				correct = append(correct, toAppend)
+				break inner
+			}
+		}
+	}
+	return correct
 }
