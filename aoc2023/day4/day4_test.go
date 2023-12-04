@@ -53,6 +53,6 @@ func TestPart2Full(t *testing.T) {
 	slog.SetDefault(logger)
 	out, e := Part2("testdata/full.txt")
 	assert.Nil(t, e, "Part2 failed!")
-	expected := -1
+	expected := 5744979
 	assert.Equal(t, expected, out, "should match")
 }
