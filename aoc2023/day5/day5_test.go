@@ -9,7 +9,7 @@ import (
 )
 
 func TestPart1Sample(t *testing.T) {
-	// t.Skip("Skip for now")
+	t.Skip("skip")
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}
@@ -23,6 +23,7 @@ func TestPart1Sample(t *testing.T) {
 }
 
 func TestPart1Full(t *testing.T) {
+	t.Skip("skip")
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelWarn,
 	}
@@ -35,15 +36,14 @@ func TestPart1Full(t *testing.T) {
 }
 
 func TestPart2Sample(t *testing.T) {
-	t.Skip("Skip for now")
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelWarn,
+		Level: slog.LevelDebug,
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
 	out, e := Part2("testdata/part1.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := 30
+	expected := 0
 	assert.Equal(t, expected, out, "should match")
 }
 

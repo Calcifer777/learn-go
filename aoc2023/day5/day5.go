@@ -39,6 +39,7 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
+	parseFile2(f)
 	return -1, nil
 }
 
@@ -105,7 +106,7 @@ func parseFile(f *os.File) ([]int, []ConvMap, error) {
 	if len(ranges) > 0 && mapId != "" {
 		convMaps = append(convMaps, NewConvMap(mapId, ranges))
 	}
-
+	//
 	slog.Debug("parseFileOutput",
 		slog.Any("seeds", seeds),
 		slog.Any("convMaps", convMaps),
@@ -146,4 +147,71 @@ func min(arr []int) int {
 		slog.Int("value", minValue),
 	)
 	return minValue
+}
+
+func parseFile2(f *os.File) ([]Seed, []ConvMap, error) {
+	buf := bufio.NewScanner(f)
+	// parse seeds
+	buf.Scan()
+	firstLine := buf.Text()
+	seedFields := strings.Fields(strings.Split(firstLine, ": ")[1])
+	seeds := make([]Seed, 0)
+	for i := 0; i < len(seedFields); i += 2 {
+		seedRangeStart, e1 := strconv.Atoi(seedFields[i])
+		seedRangeEnd, e2 := strconv.Atoi(seedFields[i+1])
+		if e1 != nil {
+			slog.Debug("Could not parse seeds")
+			return nil, nil, e1
+		}
+		if e2 != nil {
+			slog.Debug("Could not parse seeds")
+			return nil, nil, e2
+		}
+		seeds = append(seeds, newSeed(seedRangeStart, seedRangeEnd))
+	}
+	// parse maps
+	convMaps := make([]ConvMap, 0)
+	ranges := make([]Range, 0)
+	mapId := ""
+	for buf.Scan() {
+		line := buf.Text()
+		if len(line) == 0 {
+			if len(ranges) > 0 {
+				convMaps = append(convMaps, NewConvMap(mapId, ranges))
+			}
+			ranges = make([]Range, 0)
+			mapId = ""
+		} else if len(ranges) == 0 && mapId == "" {
+			mapId = strings.Fields(line)[0]
+		} else {
+			range_ := make([]int, 3)
+			for idx, s := range strings.Fields(line) {
+				n, e := strconv.Atoi(s)
+				if e != nil {
+					slog.Debug("Error during maps parsing")
+					return nil, nil, e
+				}
+				range_[idx] = n
+			}
+			ranges = append(ranges, NewRange(range_[0], range_[1], range_[2]))
+		}
+	}
+	// add last map
+	if len(ranges) > 0 && mapId != "" {
+		convMaps = append(convMaps, NewConvMap(mapId, ranges))
+	}
+	//
+	slog.Debug("parseFileOutput",
+		slog.Any("seeds", seeds),
+		slog.Any("convMaps", convMaps),
+	)
+	return seeds, convMaps, nil
+}
+
+type Seed struct {
+	from, to int
+}
+
+func newSeed(from, to int) Seed {
+	return Seed{from, to}
 }
