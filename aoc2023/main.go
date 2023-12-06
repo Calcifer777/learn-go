@@ -20,7 +20,7 @@ func NewSelection(day, part int) Selection {
 
 func main() {
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelWarn,
+		Level: slog.LevelDebug,
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
