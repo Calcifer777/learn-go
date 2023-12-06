@@ -45,8 +45,12 @@ func Part2(path string) (int, error) {
 	}
 	minValue := math.MaxInt64
 	for _, s := range seeds {
+
 		mappedS := mapRangeIter(s, convMaps)
 		minStart := findMinSeedRange(mappedS)
+		slog.Debug("Part2",
+			slog.Int("minStart", minStart),
+		)
 		if minStart < minValue {
 			minValue = minStart
 		}
@@ -229,6 +233,14 @@ func newSeed(start, span int) *SeedRange {
 	return &SeedRange{start, span}
 }
 
+func (s *SeedRange) String() string {
+	return fmt.Sprintf(
+		"Range(start: %d, span: %d)",
+		s.start,
+		s.span,
+	)
+}
+
 func overlap(start1, span1, start2, span2 int) (int, int, bool) {
 	minOverlap := max(start1, start2)
 	maxOverlap := min(start1+span1-1, start2+span2-1)
@@ -259,7 +271,7 @@ func findRanges(s SeedRange, minOverlap, maxOverlap int) (*SeedRange, *SeedRange
 		before = newSeed(s.start, minOverlap-s.start)
 	}
 	if maxOverlap < s.start+s.span-1 {
-		after = newSeed(maxOverlap+1, s.start+s.span)
+		after = newSeed(maxOverlap+1, (s.start+s.span)-(maxOverlap+1))
 	}
 	toMapMin := max(s.start, minOverlap)
 	toMapMax := min(s.start+s.span, maxOverlap)
@@ -268,6 +280,9 @@ func findRanges(s SeedRange, minOverlap, maxOverlap int) (*SeedRange, *SeedRange
 }
 
 func mapRange(seeds []SeedRange, convMap ConvMap) []SeedRange {
+	slog.Debug("mapRange",
+		slog.String("MapName", convMap.name),
+	)
 	mapped := make([]SeedRange, 0)
 	for _, r := range convMap.ranges {
 		acc := make([]SeedRange, 0)
@@ -300,18 +315,20 @@ func mapRange(seeds []SeedRange, convMap ConvMap) []SeedRange {
 	// Logs
 	for _, s := range mapped {
 		slog.Debug("MapRange",
-			slog.Any("Mapped range", s),
+			slog.Any("Mapped range", s.String()),
 		)
 	}
 	return mapped
 }
 
 func mapRangeIter(seed SeedRange, convMaps []ConvMap) []SeedRange {
+	slog.Debug("mapRangeIter start",
+		slog.Any("seed", seed),
+	)
 	seeds := make([]SeedRange, 1)
 	seeds[0] = seed
 	for _, cm := range convMaps {
 		seeds = mapRange(seeds, cm)
-		break
 	}
 	return seeds
 }
