@@ -43,12 +43,11 @@ func TestPart2Sample(t *testing.T) {
 	slog.SetDefault(logger)
 	out, e := Part2("testdata/part1.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := -1 // 46
+	expected := 46
 	assert.Equal(t, expected, out, "should match")
 }
 
 func TestPart2Full(t *testing.T) {
-	t.Skip("Skip for now")
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelWarn,
 	}
@@ -56,6 +55,6 @@ func TestPart2Full(t *testing.T) {
 	slog.SetDefault(logger)
 	out, e := Part2("testdata/full.txt")
 	assert.Nil(t, e, "Part2 failed!")
-	expected := 5744979
+	expected := 50716416
 	assert.Equal(t, expected, out, "should match")
 }
