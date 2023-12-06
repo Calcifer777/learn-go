@@ -40,8 +40,12 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
-	parseFile(f)
-	return -1, nil
+	race, e := parseFile2(f)
+	if e != nil {
+		panic(e)
+	}
+	numImprovements := getImprovements(race)
+	return numImprovements, nil
 }
 
 func parseFile(f *os.File) ([]Race, error) {
@@ -136,4 +140,34 @@ func getImprovements(r Race) int {
 		slog.Any("Num. possible improvements", numImprovements),
 	)
 	return numImprovements
+}
+
+func parseFile2(f *os.File) (Race, error) {
+	buf := bufio.NewScanner(f)
+	// parse times
+	buf.Scan()
+	line := buf.Text()
+	timeStr := strings.Replace(
+		strings.Split(line, ":")[1], " ", "", -1,
+	)
+	time, e := strconv.Atoi(timeStr)
+	if e != nil {
+		panic(e)
+	}
+	// parse distances
+	buf.Scan()
+	line = buf.Text()
+	distanceStr := strings.Replace(
+		strings.Split(line, ":")[1], " ", "", -1,
+	)
+	distance, e := strconv.Atoi(distanceStr)
+	if e != nil {
+		panic(e)
+	}
+	// make races
+	race := newRace(time, distance)
+	slog.Info("parseFile2",
+		slog.String("Race", race.ToString()),
+	)
+	return race, nil
 }
