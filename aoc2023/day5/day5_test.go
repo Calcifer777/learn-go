@@ -43,7 +43,7 @@ func TestPart2Sample(t *testing.T) {
 	slog.SetDefault(logger)
 	out, e := Part2("testdata/part1.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := 0
+	expected := 46
 	assert.Equal(t, expected, out, "should match")
 }
 
