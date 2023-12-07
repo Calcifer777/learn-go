@@ -11,7 +11,7 @@ import (
 	"unicode"
 )
 
-func Part1(path string) (int, error) {
+func Part1(path string) (int64, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		slog.Error(fmt.Sprintf("Cound not open file at %s", path))
@@ -23,13 +23,16 @@ func Part1(path string) (int, error) {
 		panic(e)
 	}
 	sort.Sort(Hands(hands))
-	v := 0
+	var v int64 = 0
 	for idx, h := range hands {
-		slog.Info("Part1",
+		slog.Debug("Part1",
 			slog.String("H", h.ToString()),
 		)
-		v += (idx + 1) * h.bid
+		v += int64((idx + 1) * h.bid)
 	}
+	slog.Info("Part1",
+		slog.Any("result", v),
+	)
 	return v, nil
 }
 
@@ -55,7 +58,7 @@ func parseFile(f *os.File) ([]Hand, error) {
 			panic(e)
 		}
 		hands = append(hands, *hand)
-		slog.Info("parsefile",
+		slog.Debug("parsefile",
 			slog.String("line", line),
 			slog.String("hand", hand.ToString()),
 			slog.String("hand value", hand.Value().String()),
