@@ -25,8 +25,9 @@ func Part1(path string) (int64, error) {
 	sort.Sort(Hands(hands))
 	var v int64 = 0
 	for idx, h := range hands {
-		slog.Debug("Part1",
+		slog.Info("Part1",
 			slog.String("H", h.ToString()),
+			slog.String("V", h.Value().String()),
 		)
 		v += int64((idx + 1) * h.bid)
 	}
@@ -175,9 +176,14 @@ func (hs Hands) Less(i, j int) bool {
 	} else if hs[i].Value() > hs[j].Value() {
 		return false
 	} else {
-		for cardIdx := range [5]int{} {
-			if hs[i].cards[cardIdx] < hs[j].cards[cardIdx] {
+		var cI, cJ Card
+		for cardIdx := 0; cardIdx < 5; cardIdx++ {
+			cI = hs[i].cards[cardIdx]
+			cJ = hs[j].cards[cardIdx]
+			if cI < cJ {
 				return true
+			} else if cI > cJ {
+				return false
 			}
 		}
 		return false

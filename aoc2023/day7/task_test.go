@@ -15,10 +15,9 @@ func TestPart1Sample(t *testing.T) {
 }
 
 func TestPart1Full(t *testing.T) {
-	// t.Skip("skip")
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := int64(255365857)
+	expected := int64(255048101)
 	assert.Equal(t, expected, out, "should match")
 }
 
