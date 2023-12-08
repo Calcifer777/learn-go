@@ -17,7 +17,15 @@ func Part1(path string) (int, error) {
 	defer f.Close()
 	net, dirs, e := parseFile(f)
 	start := net.nodes[START]
-	return traverse(start, dirs), nil
+	return traverse(start, dirs, done), nil
+}
+
+func done(n *Node) bool {
+	return n.v == TARGET
+}
+
+func done2(n *Node) bool {
+	return n.isEnding2()
 }
 
 func Part2(path string) (int, error) {
@@ -27,8 +35,30 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
-	parseFile(f)
-	return -1, nil
+	net, dirs, e := parseFile(f)
+	if e != nil {
+		panic(e)
+	}
+	startingNodes := make(map[*Node]int)
+	steps := make([]int, 0)
+	for _, n := range net.nodes {
+		if n.isStart2() {
+			travelSteps := traverse(n, dirs, done2)
+			slog.Info("part2",
+				slog.String("start node", n.v),
+				slog.Int("steps", travelSteps),
+			)
+			startingNodes[n] = travelSteps
+			steps = append(steps, travelSteps)
+		}
+	}
+	for n, s := range startingNodes {
+		slog.Info("part2",
+			slog.String("node", n.String()),
+			slog.Int("travelStep", s),
+		)
+	}
+	return lcm(steps), nil
 }
 
 func parseFile(f *os.File) (*Net, []Direction, error) {
@@ -46,7 +76,7 @@ func parseFile(f *os.File) (*Net, []Direction, error) {
 	}
 	slog.Info("parsefile", slog.String("directions", string(dirs)))
 	// parse nodes
-	re := regexp.MustCompile(`^([(A-Z)]{3}) = \(([(A-Z)]{3}), ([(A-Z)]{3})\)$`)
+	re := regexp.MustCompile(`^([A-Z\d]{3}) = \(([A-Z\d]{3}), ([A-Z\d]{3})\)$`)
 	nodes := make(map[string]*Node)
 	for buf.Scan() {
 		line := buf.Text()
@@ -113,6 +143,14 @@ func (n *Node) String() string {
 	return fmt.Sprintf("Node(v=%s, l=%s, r=%s)", n.v, lv, rv)
 }
 
+func (n *Node) isStart2() bool {
+	return n.v[len(n.v)-1] == 'A'
+}
+
+func (n *Node) isEnding2() bool {
+	return n.v[len(n.v)-1] == 'Z'
+}
+
 type Net struct {
 	nodes map[string]*Node
 }
@@ -121,21 +159,38 @@ func NewNet(nodes map[string]*Node) *Net {
 	return &Net{nodes: nodes}
 }
 
-func traverse(start *Node, dirs []Direction) int {
-	return innerTraverse(start, dirs, 0)
+func traverse(start *Node, dirs []Direction, done func(n *Node) bool) int {
+	cnt := 0
+	n := start
+	for !done(n) {
+		n = traverseStep(n, dirs, cnt)
+		cnt += 1
+	}
+	return cnt
 }
 
-func innerTraverse(n *Node, dirs []Direction, cnt int) int {
-	if n.v == TARGET {
-		return cnt
+func traverseStep(n *Node, dirs []Direction, cnt int) *Node {
+	var nextNode *Node
+	if dirs[cnt%len(dirs)] == L {
+		nextNode = n.l
 	} else {
-		var nextNode *Node
-		if dirs[cnt%len(dirs)] == L {
-			nextNode = n.l
-		} else {
-			nextNode = n.r
-		}
-		slog.Info("traverse", slog.String("next", nextNode.v))
-		return innerTraverse(nextNode, dirs, cnt+1)
+		nextNode = n.r
 	}
+	slog.Info("traverse", slog.String("next", nextNode.v))
+	return nextNode
+}
+
+func gcd(i, j int) int {
+	if j == 0 {
+		return i
+	}
+	return gcd(j, i%j)
+}
+
+func lcm(xs []int) int {
+	acc := 1
+	for _, x := range xs {
+		acc = acc * x / gcd(acc, x)
+	}
+	return acc
 }
