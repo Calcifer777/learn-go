@@ -19,7 +19,7 @@ func Part1(path string) (int, error) {
 	hs, e := parseFile(f)
 	hDiffs := FMap(hDiff, hs)
 	preds := FMap(getPred, hDiffs)
-	out := part1Out(preds)
+	out := arrSum(preds)
 	return out, nil
 }
 
@@ -30,7 +30,11 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
-	return -1, nil
+	hs, e := parseFile(f)
+	hDiffs := FMap(hDiff, hs)
+	preds := FMap(getPredBackwards, hDiffs)
+	out := arrSum(preds)
+	return out, nil
 }
 
 func parseFile(f *os.File) ([]History, error) {
@@ -93,6 +97,19 @@ func getPred(d []History) int {
 	return out
 }
 
+func getPredBackwards(ds []History) int {
+	out := 0
+	for i := len(ds) - 1; i >= 0; i-- {
+		out = ds[i][0] - out
+	}
+	slog.Info(
+		"getPredBackwards",
+		slog.Any("ds", ds),
+		slog.Int("pred", out),
+	)
+	return out
+}
+
 func FMap[T any, S any](fn func(T) S, xs []T) []S {
 	acc := make([]S, len(xs))
 	for idx, t := range xs {
@@ -101,7 +118,7 @@ func FMap[T any, S any](fn func(T) S, xs []T) []S {
 	return acc
 }
 
-func part1Out(preds []int) int {
+func arrSum(preds []int) int {
 	out := 0
 	for _, p := range preds {
 		out += p
