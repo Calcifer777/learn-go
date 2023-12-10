@@ -21,18 +21,16 @@ func TestPart1Full(t *testing.T) {
 	assert.Equal(t, expected, out, "should match")
 }
 
-func TestPart2Sample(t *testing.T) {
-	t.Skip("skip")
-	out, e := Part2("testdata/sample.txt")
+func TestPart2SampleA(t *testing.T) {
+	out, e := Part2("testdata/sample-2a.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := 46
+	expected := 4
 	assert.Equal(t, expected, out, "should match")
 }
 
 func TestPart2Full(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part2("testdata/full.txt")
 	assert.Nil(t, e, "Part2 failed!")
-	expected := -1
+	expected := 291
 	assert.Equal(t, expected, out, "should match")
 }

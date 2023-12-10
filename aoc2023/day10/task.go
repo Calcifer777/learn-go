@@ -18,13 +18,8 @@ func Part1(path string) (int, error) {
 	if e != nil {
 		panic(e)
 	}
-	l := loopLen(grid, start)
-	var out int
-	if l%2 == 1 {
-		out = l/2 + 1
-	} else {
-		out = l / 2
-	}
+	loopCells := findLoopCells(&grid, start)
+	out := len(loopCells)/2 + len(loopCells)%2
 	return out, nil
 }
 
@@ -35,8 +30,13 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
-	parseFile(f)
-	return -1, nil
+	grid, start, e := parseFile(f)
+	if e != nil {
+		panic(e)
+	}
+	loopCells := findLoopCells(&grid, start)
+	_, inside := bisect(grid, loopCells)
+	return len(inside), nil
 }
 
 type Grid = [][]rune
@@ -67,18 +67,19 @@ func parseFile(f *os.File) (Grid, Coord, error) {
 	return grid, start, nil
 }
 
-func loopLen(g Grid, start Coord) int {
-	l := 0
+func findLoopCells(g *Grid, start Coord) []Coord {
 	r, c, prevNS, prevEW := findStartSuccessor(g, start)
 	var cell rune
 	dir := N
+	loopCells := make([]Coord, 0)
+	loopCells = append(loopCells, Coord{r: start.r, c: start.c})
 loop:
 	for {
-		cell = g[r][c]
+		cell = (*g)[r][c]
+		loopCells = append(loopCells, Coord{r: r, c: c})
 		slog.Info("loopTraverse",
 			slog.String("cell", string(cell)),
 		)
-		l += 1
 		switch cell {
 		case '|':
 			if *prevNS == S {
@@ -140,17 +141,22 @@ loop:
 				prevNS = &dir
 				prevEW = nil
 			}
-		case 'S':
+		}
+		if r == start.r && c == start.c {
 			break loop
 		}
 	}
 	slog.Info("startSuccessor",
-		slog.Int("loopLen", l),
+		slog.Int("loop len", len(loopCells)),
 	)
-	return l
+	return loopCells
 }
 
 type Direction int
+
+func (d *Direction) String() string {
+	return [4]string{"N", "S", "E", "W"}[*d]
+}
 
 const (
 	N Direction = iota
@@ -159,45 +165,137 @@ const (
 	W
 )
 
-func findStartSuccessor(g Grid, start Coord) (int, int, *Direction, *Direction) {
+func findStartSuccessor(g *Grid, start Coord) (int, int, *Direction, *Direction) {
 	var ew, ns *Direction
 	var r, c int
 	var up, down, left, right *rune
+	var next *rune
+	var nextDir, prevDir Direction
 	if start.r > 0 {
-		up = &g[start.r-1][start.c]
+		up = &(*g)[start.r-1][start.c]
 	}
-	if start.r < len(g[0])-1 {
-		down = &g[start.r+1][start.c]
+	if start.r < len(*g)-1 {
+		down = &(*g)[start.r+1][start.c]
 	}
 	if start.c > 0 {
-		left = &g[start.r][start.c-1]
+		left = &(*g)[start.r][start.c-1]
 	}
-	if start.c < len(g)-1 {
-		right = &g[start.r][start.c+1]
+	if start.c < len(*g)-1 {
+		right = &(*g)[start.r][start.c+1]
 	}
 	if up != nil && (*up == 'F' || *up == '7' || *up == '|') {
+		next = up
 		r, c = start.r-1, start.c
 		dir := S
 		ns = &dir
-	} else if down != nil && (*down == 'J' || *down == 'L' || *down == '|') {
-		r, c = start.r+1, start.c
-		dir := N
-		ns = &dir
-	} else if left != nil && (*left == '-' || *left == 'L' || *left == 'F') {
-		r, c = start.r, start.c-1
-		dir := E
-		ew = &dir
-	} else if right != nil && (*right == '-' || *right == 'J' || *right == '7') {
-		r, c = start.r, start.c+1
-		dir := W
-		ew = &dir
+		nextDir = N
 	}
+	if down != nil && (*down == 'J' || *down == 'L' || *down == '|') {
+		if next == nil {
+			next = down
+			r, c = start.r+1, start.c
+			dir := N
+			ns = &dir
+			nextDir = S
+		} else {
+			prevDir = S
+		}
+	}
+	if left != nil && (*left == '-' || *left == 'L' || *left == 'F') {
+		if next == nil {
+			next = left
+			r, c = start.r, start.c-1
+			dir := E
+			ew = &dir
+			nextDir = W
+		} else {
+			prevDir = W
+		}
+	} else if right != nil && (*right == '-' || *right == 'J' || *right == '7') {
+		if next == nil {
+			next = right
+			r, c = start.r, start.c+1
+			dir := W
+			ew = &dir
+			nextDir = E
+		} else {
+			prevDir = E
+		}
+	}
+	var replacement rune
+	if nextDir == N && prevDir == S {
+		replacement = '|'
+	} else if nextDir == N && prevDir == W {
+		replacement = 'J'
+	} else if nextDir == N && prevDir == E {
+		replacement = 'L'
+	} else if nextDir == S && prevDir == W {
+		replacement = '7'
+	} else if nextDir == S && prevDir == E {
+		replacement = 'F'
+	} else if nextDir == W && prevDir == E {
+		replacement = '-'
+	}
+	(*g)[start.r][start.c] = replacement
 	slog.Info("startSuccessor",
 		slog.Int("row", r),
 		slog.Int("col", c),
 		slog.Any("ns", ns),
 		slog.Any("ew", ew),
-		slog.String("value", string(g[r][c])),
+		slog.String("prevDir", prevDir.String()),
+		slog.String("nextDir", nextDir.String()),
+		slog.String("Start repl", string(replacement)),
 	)
 	return r, c, ns, ew
+}
+
+func cellsToMap(cells []Coord) map[Coord]bool {
+	m := make(map[Coord]bool)
+	for _, c := range cells {
+		m[c] = true
+	}
+	return m
+}
+
+func bisect(g Grid, loopCells []Coord) ([]Coord, []Coord) {
+	outsideCells := make([]Coord, 0)
+	insideCells := make([]Coord, 0)
+	loopCellsMap := cellsToMap(loopCells)
+	// find cell outside loop
+	var out bool
+	for r := 0; r < len(g); r++ {
+		out = true
+		for c := 0; c < len(g[0]); c++ {
+			current := Coord{r, c}
+			v := g[r][c]
+			_, ok := loopCellsMap[current]
+			if !ok {
+				if out {
+					outsideCells = append(outsideCells, current)
+				} else {
+					insideCells = append(insideCells, current)
+				}
+			} else {
+				if v == '|' || v == 'F' || v == '7' {
+					out = !out
+				}
+			}
+			slog.Info("bisect",
+				slog.Any("c", current),
+				slog.String("v", string(v)),
+				slog.Bool("out?", out),
+				slog.Bool("in loop?", ok),
+				slog.Int("# in", len(insideCells)),
+			)
+		}
+		slog.Info("bisect",
+			slog.Any("Inside", len(insideCells)),
+			slog.Any("Outside", len(outsideCells)),
+		)
+
+	}
+	if len(loopCells)+len(insideCells)+len(outsideCells) != len(g[0])*len(g) {
+		panic(fmt.Errorf("Error!"))
+	}
+	return outsideCells, insideCells
 }
