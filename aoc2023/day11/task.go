@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func Part1(path string) (int, error) {
+func Part1(path string) (int64, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		slog.Error(fmt.Sprintf("Cound not open file at %s", path))
@@ -19,19 +19,24 @@ func Part1(path string) (int, error) {
 		panic(e)
 	}
 	fullRows, fullCols := getFull(gs)
-	d := allDists(gs, fullRows, fullCols)
+	d := allDists(gs, fullRows, fullCols, 1)
 	return d, nil
 }
 
-func Part2(path string) (int, error) {
+func Part2(path string, adj int) (int64, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		slog.Error(fmt.Sprintf("Cound not open file at %s", path))
 		return -1, e
 	}
 	defer f.Close()
-	parseFile(f)
-	return -1, nil
+	gs, e := parseFile(f)
+	if e != nil {
+		panic(e)
+	}
+	fullRows, fullCols := getFull(gs)
+	d := allDists(gs, fullRows, fullCols, adj)
+	return d, nil
 }
 
 func parseFile(f *os.File) (Galaxies, error) {
@@ -98,8 +103,9 @@ func getFull(gs []Galaxy) ([]int, []int) {
 	return fullRows, fullCols
 }
 
-func allDists(gs Galaxies, fullRows []int, fullCols []int) int {
-	ds := 0
+func allDists(gs Galaxies, fullRows []int, fullCols []int, adj int) int64 {
+	var ds int64
+	adj = max(adj-1, 1)
 	for _, gF := range gs {
 		for _, gT := range gs {
 			d := gF.dist(&gT)
@@ -110,8 +116,8 @@ func allDists(gs Galaxies, fullRows []int, fullCols []int) int {
 			cT := max(gF.c, gT.c)
 			adjR := (rT - rF) - Sum(fullRows[rF:rT])
 			adjC := (cT - cF) - Sum(fullCols[cF:cT])
-			dAdj := d + adjR + adjC
-			ds += dAdj
+			dAdj := d + (adjR+adjC)*adj
+			ds += int64(dAdj)
 			slog.Info("allDists",
 				slog.String("F", gF.String()),
 				slog.String("T", gT.String()),
