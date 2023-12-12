@@ -149,8 +149,12 @@ func repeat(r Record, i int) Record {
 
 func find3(r Record) int {
 	patternPrefix := regexp.MustCompile(`^[\.]+`)
+	cache := NewCache()
 	var looper func(s string, gs []uint8) int
 	looper = func(s string, gs []uint8) int {
+		if v, ok := cache.get(s, gs); ok {
+			return v
+		}
 		prefix := patternPrefix.FindString(s)
 		tail := s[len(prefix):]
 		if len(tail) == 0 {
@@ -168,7 +172,9 @@ func find3(r Record) int {
 			}
 		}
 		if tail[0] == '?' {
-			return looper("#"+tail[1:], gs) + looper("."+tail[1:], gs)
+			out := looper("."+tail[1:], gs) + looper("#"+tail[1:], gs)
+			cache.set(prefix+s, gs, out)
+			return out
 		}
 		re := regexp.MustCompile(fmt.Sprintf(`^[#\?]{%d}(\?|\.|$)`, gs[0]))
 		match := re.FindString(tail)
@@ -188,7 +194,23 @@ func find3(r Record) int {
 
 type State struct {
 	s  string
-	gs []uint8
+	gs string
 }
 
-type Cache = map[*State]int
+type Cache struct {
+	cache map[State]int
+}
+
+func NewCache() Cache {
+	c := make(map[State]int)
+	return Cache{c}
+}
+
+func (c Cache) set(s string, groups []uint8, v int) {
+	c.cache[State{s, string(groups)}] = v
+}
+
+func (c Cache) get(s string, groups []uint8) (int, bool) {
+	v, ok := c.cache[State{s, string(groups)}]
+	return v, ok
+}
