@@ -23,7 +23,7 @@ func Part1(path string) (int, error) {
 	}
 	setups := 0
 	for _, r := range rs {
-		setups += find3(r)
+		setups += find(r)
 	}
 	return setups, nil
 }
@@ -43,7 +43,7 @@ func Part2(path string) (int, error) {
 	for _, r := range rs {
 		rr := repeat(r, 5)
 		fmt.Printf("%s\n", rr.String())
-		setups += find3(rr)
+		setups += find(rr)
 	}
 	return setups, nil
 }
@@ -70,9 +70,8 @@ func parseFile(f *os.File) ([]Record, error) {
 }
 
 type Record struct {
-	s       string
-	groups  []uint8
-	pattern *regexp.Regexp
+	s      string
+	groups []uint8
 }
 
 func NewRecord(xs string, gs []uint8) Record {
@@ -85,52 +84,15 @@ func NewRecord(xs string, gs []uint8) Record {
 			patternStr += `\.*$`
 		}
 	}
-	pattern := regexp.MustCompile(patternStr)
-	return Record{s: xs, groups: gs, pattern: pattern}
+	return Record{s: xs, groups: gs}
 }
 
 func (r *Record) String() string {
 	return fmt.Sprintf(
-		"R(s:`%s`, gs: %v)", //, p: `%s`)",
+		"R(s:`%s`, gs: %v)",
 		r.s,
 		r.groups,
-		// r.pattern.String(),
 	)
-}
-
-func find(r Record) int {
-	var looper func(s string, d int) int
-	looper = func(s string, d int) int {
-		for idx, ch := range s {
-			if ch == '?' {
-				s1 := s[:idx] + "#" + s[idx+1:]
-				s2 := s[:idx] + "." + s[idx+1:]
-				return looper(s1, d+1) + looper(s2, d+1)
-			}
-		}
-		var out int
-		match := r.pattern.MatchString(s)
-		if match {
-			out = 1
-		} else {
-			out = 0
-		}
-		if match {
-			slog.Debug("find",
-				slog.String("s", s),
-				slog.Any("gs", r.groups),
-				slog.Int("d", d),
-				slog.Bool("m", match),
-			)
-		}
-		return out
-	}
-	setups := looper(r.s, 0)
-	slog.Debug("find",
-		slog.String("s", r.s),
-		slog.Int("total", setups),
-	)
-	return setups
 }
 
 func repeat(r Record, i int) Record {
@@ -147,7 +109,7 @@ func repeat(r Record, i int) Record {
 	return NewRecord(newS, newGroups)
 }
 
-func find3(r Record) int {
+func find(r Record) int {
 	patternPrefix := regexp.MustCompile(`^[\.]+`)
 	cache := NewCache()
 	var looper func(s string, gs []uint8) int

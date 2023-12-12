@@ -7,7 +7,6 @@ import (
 )
 
 func TestPart1Sample(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part1("testdata/sample.txt")
 	assert.Nil(t, e, "Part1 failed!")
 	expected := 21
@@ -16,7 +15,6 @@ func TestPart1Sample(t *testing.T) {
 }
 
 func TestPart1Full(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
 	expected := 7379
@@ -24,7 +22,6 @@ func TestPart1Full(t *testing.T) {
 }
 
 func TestPart2Sample(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part2("testdata/sample.txt")
 	assert.Nil(t, e, "Part2 failed!")
 	expected := 525152
@@ -34,6 +31,6 @@ func TestPart2Sample(t *testing.T) {
 func TestPart2Full(t *testing.T) {
 	out, e := Part2("testdata/full.txt")
 	assert.Nil(t, e, "Part2 failed!")
-	expected := -1
+	expected := 7732028747925
 	assert.Equal(t, expected, out, "should match")
 }
