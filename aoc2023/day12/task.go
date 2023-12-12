@@ -42,7 +42,8 @@ func Part2(path string) (int, error) {
 	setups := 0
 	for _, r := range rs {
 		rr := repeat(r, 5)
-		setups += find(rr)
+		fmt.Printf("%s\n", rr.String())
+		setups += find3(rr)
 	}
 	return setups, nil
 }
@@ -60,7 +61,7 @@ func parseFile(f *os.File) ([]Record, error) {
 			groups = append(groups, i)
 		}
 		r := NewRecord(xs, groups)
-		slog.Info("parsefile",
+		slog.Debug("parsefile",
 			slog.String("record", r.String()),
 		)
 		records = append(records, r)
@@ -115,7 +116,7 @@ func find(r Record) int {
 			out = 0
 		}
 		if match {
-			slog.Info("find",
+			slog.Debug("find",
 				slog.String("s", s),
 				slog.Any("gs", r.groups),
 				slog.Int("d", d),
@@ -125,7 +126,7 @@ func find(r Record) int {
 		return out
 	}
 	setups := looper(r.s, 0)
-	slog.Info("find",
+	slog.Debug("find",
 		slog.String("s", r.s),
 		slog.Int("total", setups),
 	)
@@ -135,9 +136,9 @@ func find(r Record) int {
 func repeat(r Record, i int) Record {
 	chunks := make([]string, i)
 	newGroups := make([]int, 0)
-	for j := 0; j <= i; j++ {
+	for j := 0; j < i; j++ {
 		newGroups = append(newGroups, r.groups...)
-		chunks = append(chunks, r.s)
+		chunks[j] = r.s
 	}
 	newS := strings.Join(
 		chunks,
@@ -189,7 +190,7 @@ func find2(r Record) int {
 		}
 	}
 	setups := looper(r.s, r.groups, "*")
-	slog.Info("find",
+	slog.Debug("find",
 		slog.String("s", r.s),
 		slog.Int("total", setups),
 	)
@@ -200,7 +201,8 @@ func find3(r Record) int {
 	patternPrefix := regexp.MustCompile(`^[\.]+`)
 	var looper func(s string, gs []int) int
 	looper = func(s string, gs []int) int {
-		tail := patternPrefix.ReplaceAllLiteralString(s, "")
+		prefix := patternPrefix.FindString(s)
+		tail := s[len(prefix):]
 		if len(tail) == 0 {
 			if len(gs) > 0 {
 				return 0
@@ -218,16 +220,16 @@ func find3(r Record) int {
 		if tail[0] == '?' {
 			return looper("#"+tail[1:], gs) + looper("."+tail[1:], gs)
 		}
-		re := regexp.MustCompile(fmt.Sprintf(`^[#\?]{%d}[?\.]`, gs[0]))
+		re := regexp.MustCompile(fmt.Sprintf(`^[#\?]{%d}(\?|\.|$)`, gs[0]))
 		match := re.FindString(tail)
 		if l := len(match); l > 0 {
-			return looper(s[l:], gs[1:])
+			return looper(tail[l:], gs[1:])
 		} else {
 			return 0
 		}
 	}
-	setups := looper(r.s+".", r.groups)
-	slog.Info("find",
+	setups := looper(r.s, r.groups)
+	slog.Debug("f3",
 		slog.String("r", r.String()),
 		slog.Int("total", setups),
 	)
