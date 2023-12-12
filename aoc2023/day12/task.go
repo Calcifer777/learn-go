@@ -114,6 +114,7 @@ func find(r Record) int {
 	cache := NewCache()
 	var looper func(s string, gs []uint8) int
 	looper = func(s string, gs []uint8) int {
+		var out int
 		if v, ok := cache.get(s, gs); ok {
 			return v
 		}
@@ -121,27 +122,33 @@ func find(r Record) int {
 		tail := s[len(prefix):]
 		if len(tail) == 0 {
 			if len(gs) > 0 {
-				return 0
+				out = 0
 			} else {
-				return 1
+				out = 1
 			}
+			cache.set(prefix+s, gs, out)
+			return out
 		}
 		if len(gs) == 0 {
 			if strings.Contains(tail, "#") {
-				return 0
+				out = 0
 			} else {
-				return 1
+				out = 1
 			}
+			cache.set(prefix+s, gs, out)
+			return out
 		}
 		if tail[0] == '?' {
-			out := looper("."+tail[1:], gs) + looper("#"+tail[1:], gs)
+			out = looper("."+tail[1:], gs) + looper("#"+tail[1:], gs)
 			cache.set(prefix+s, gs, out)
 			return out
 		}
 		re := regexp.MustCompile(fmt.Sprintf(`^[#\?]{%d}(\?|\.|$)`, gs[0]))
 		match := re.FindString(tail)
 		if l := len(match); l > 0 {
-			return looper(tail[l:], gs[1:])
+			out = looper(tail[l:], gs[1:])
+			cache.set(prefix+s, gs, out)
+			return out
 		} else {
 			return 0
 		}
