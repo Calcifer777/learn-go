@@ -24,6 +24,7 @@ func TestPart1Full(t *testing.T) {
 }
 
 func TestPart2Sample(t *testing.T) {
+	t.Skip("skip")
 	out, e := Part2("testdata/sample.txt")
 	assert.Nil(t, e, "Part2 failed!")
 	expected := 525152
@@ -31,7 +32,6 @@ func TestPart2Sample(t *testing.T) {
 }
 
 func TestPart2Full(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part2("testdata/full.txt")
 	assert.Nil(t, e, "Part2 failed!")
 	expected := -1

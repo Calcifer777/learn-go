@@ -55,10 +55,10 @@ func parseFile(f *os.File) ([]Record, error) {
 		line := buf.Text()
 		chunks := strings.Fields(line)
 		xs := chunks[0]
-		groups := make([]int, 0)
+		groups := make([]uint8, 0)
 		for _, s := range strings.Split(chunks[1], ",") {
-			i, _ := strconv.Atoi(s)
-			groups = append(groups, i)
+			i, _ := strconv.ParseUint(s, 10, 8)
+			groups = append(groups, uint8(i))
 		}
 		r := NewRecord(xs, groups)
 		slog.Debug("parsefile",
@@ -71,11 +71,11 @@ func parseFile(f *os.File) ([]Record, error) {
 
 type Record struct {
 	s       string
-	groups  []int
+	groups  []uint8
 	pattern *regexp.Regexp
 }
 
-func NewRecord(xs string, gs []int) Record {
+func NewRecord(xs string, gs []uint8) Record {
 	patternStr := `^\.*`
 	for i := 0; i < len(gs); i++ {
 		patternStr += fmt.Sprintf(`[#]{%d}`, gs[i])
@@ -135,7 +135,7 @@ func find(r Record) int {
 
 func repeat(r Record, i int) Record {
 	chunks := make([]string, i)
-	newGroups := make([]int, 0)
+	newGroups := make([]uint8, 0)
 	for j := 0; j < i; j++ {
 		newGroups = append(newGroups, r.groups...)
 		chunks[j] = r.s
@@ -147,60 +147,10 @@ func repeat(r Record, i int) Record {
 	return NewRecord(newS, newGroups)
 }
 
-func find2(r Record) int {
-	var looper func(s string, gs []int, lookFor string) int
-	looper = func(s string, gs []int, lookFor string) int {
-		if len(s) == 0 {
-			if len(gs) == 0 {
-				return 1
-			} else {
-				return 0
-			}
-		} else {
-			switch s[0] {
-			case '.':
-				if lookFor != "*" && lookFor != "." {
-					return 0
-				} else {
-					return looper(s[1:], gs, "*")
-				}
-			case '#':
-				{
-					if lookFor != "*" && lookFor != "#" {
-						return 0
-					} else if len(gs) == 0 {
-						return 0
-					}
-					if gs[0] == 1 {
-						return looper(s[1:], gs[1:], ".")
-					} else {
-						gsNew := append([]int{gs[0] - 1}, gs[1:]...)
-						return looper(s[1:], gsNew, "#")
-					}
-				}
-			case '?':
-				{
-					s1 := "#" + s[1:]
-					s2 := "." + s[1:]
-					return looper(s1, gs, lookFor) + looper(s2, gs, lookFor)
-				}
-			default:
-				return -1000
-			}
-		}
-	}
-	setups := looper(r.s, r.groups, "*")
-	slog.Debug("find",
-		slog.String("s", r.s),
-		slog.Int("total", setups),
-	)
-	return setups
-}
-
 func find3(r Record) int {
 	patternPrefix := regexp.MustCompile(`^[\.]+`)
-	var looper func(s string, gs []int) int
-	looper = func(s string, gs []int) int {
+	var looper func(s string, gs []uint8) int
+	looper = func(s string, gs []uint8) int {
 		prefix := patternPrefix.FindString(s)
 		tail := s[len(prefix):]
 		if len(tail) == 0 {
@@ -235,3 +185,10 @@ func find3(r Record) int {
 	)
 	return setups
 }
+
+type State struct {
+	s  string
+	gs []uint8
+}
+
+type Cache = map[*State]int
