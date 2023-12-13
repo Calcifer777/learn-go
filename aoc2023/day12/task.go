@@ -75,15 +75,6 @@ type Record struct {
 }
 
 func NewRecord(xs string, gs []uint8) Record {
-	patternStr := `^\.*`
-	for i := 0; i < len(gs); i++ {
-		patternStr += fmt.Sprintf(`[#]{%d}`, gs[i])
-		if i < len(gs)-1 {
-			patternStr += `\.+`
-		} else {
-			patternStr += `\.*$`
-		}
-	}
 	return Record{s: xs, groups: gs}
 }
 
