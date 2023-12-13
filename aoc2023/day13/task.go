@@ -19,8 +19,13 @@ func Part1(path string) (int, error) {
 		panic(e)
 	}
 	out := 0
-	for _, p := range ps {
-		out += p.value()
+	var v int
+	for idx, p := range ps {
+		v = p.value()
+		if v == -1 {
+			panic(fmt.Errorf("Error at pattern %d", idx))
+		}
+		out += v
 	}
 
 	return out, nil
@@ -125,7 +130,7 @@ func genPrimes(N int) []int {
 }
 
 func findMirrorIdx(xs []int) (int, bool) {
-	for i := 1; i < len(xs)-1; i++ {
+	for i := 0; i < len(xs)-1; i++ {
 		isMirrorIdx := true
 	inner:
 		for o := 0; o <= min(i, len(xs)-i-2); o++ {

@@ -7,6 +7,7 @@ import (
 )
 
 func TestPart1Sample(t *testing.T) {
+	t.Skip("skip")
 	out, e := Part1("testdata/sample.txt")
 	assert.Nil(t, e, "Part1 failed!")
 	expected := 405
@@ -15,10 +16,9 @@ func TestPart1Sample(t *testing.T) {
 }
 
 func TestPart1Full(t *testing.T) {
-	t.Skip("skip")
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := -1
+	expected := 35521
 	assert.Equal(t, expected, out, "should match")
 }
 
