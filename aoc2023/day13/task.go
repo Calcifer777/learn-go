@@ -44,6 +44,7 @@ func parseFile(f *os.File) ([]Pattern, error) {
 	cols := make([]int, 0)
 	row := 0
 	patterns := make([]Pattern, 0)
+	primes := genPrimes(1000)
 	for buf.Scan() {
 		line := buf.Text()
 		if len(line) <= 1 {
@@ -65,9 +66,9 @@ func parseFile(f *os.File) ([]Pattern, error) {
 				if row == 0 {
 					row = 1
 				}
-				row *= PRIMES[colIdx]
+				row *= primes[colIdx]
 				// update col
-				cols[colIdx] *= PRIMES[rowIdx]
+				cols[colIdx] *= primes[rowIdx]
 			}
 		}
 		rows = append(rows, row)
@@ -86,39 +87,56 @@ type Pattern struct {
 }
 
 func (p *Pattern) value() int {
-	return (100*findMirrorIdx(p.rows) +
-		findMirrorIdx(p.cols))
+	var v int
+	var mirrorAxis string
+	if colMirrorIdx, okCols := findMirrorIdx(p.cols); okCols {
+		v = colMirrorIdx + 1
+		mirrorAxis = "cols"
+	} else if rowMirrorIdx, okRows := findMirrorIdx(p.rows); okRows {
+		v = 100 * (rowMirrorIdx + 1)
+		mirrorAxis = "rows"
+	} else {
+		slog.Error("Couldn't find mirror axis for pattern")
+		mirrorAxis = "?"
+		v = -1
+	}
+	slog.Info("p.value",
+		slog.Any("p", p),
+		slog.String("axis", mirrorAxis),
+		slog.Int("v", v),
+	)
+	return v
 }
 
-var PRIMES = []int{
-	2,
-	3,
-	5,
-	7,
-	11,
-	13,
-	17,
-	19,
-	23,
-	29,
-	31,
-	37,
-	41,
+func genPrimes(N int) []int {
+	// sieveOfEratosthenes
+	primes := make([]int, 0)
+	b := make([]bool, N)
+	for i := 2; i < N; i++ {
+		if b[i] == true {
+			continue
+		}
+		primes = append(primes, i)
+		for k := i * i; k < N; k += i {
+			b[k] = true
+		}
+	}
+	return primes
 }
 
-func findMirrorIdx(xs []int) int {
-	for i := 0; i < len(xs); i++ {
+func findMirrorIdx(xs []int) (int, bool) {
+	for i := 1; i < len(xs)-1; i++ {
 		isMirrorIdx := true
 	inner:
-		for o := 0; o <= min(i, len(xs)-i); o++ {
+		for o := 0; o <= min(i, len(xs)-i-2); o++ {
 			if xs[i-o] != xs[i+o+1] {
 				isMirrorIdx = false
 				break inner
 			}
 		}
 		if isMirrorIdx {
-			return i
+			return i, true
 		}
 	}
-	return -1
+	return -1, false
 }
