@@ -21,13 +21,12 @@ func Part1(path string) (int, error) {
 	out := 0
 	var v int
 	for idx, p := range ps {
-		v = p.value()
+		v = p.value(findMirrorIdx)
 		if v == -1 {
 			panic(fmt.Errorf("Error at pattern %d", idx))
 		}
 		out += v
 	}
-
 	return out, nil
 }
 
@@ -38,8 +37,20 @@ func Part2(path string) (int, error) {
 		return -1, e
 	}
 	defer f.Close()
-	parseFile(f)
-	return -1, nil
+	ps, e := parseFile(f)
+	if e != nil {
+		panic(e)
+	}
+	out := 0
+	var v int
+	for idx, p := range ps {
+		v = p.value(findMirrorIdxV2)
+		if v == -1 {
+			panic(fmt.Errorf("Error at pattern %d", idx))
+		}
+		out += v
+	}
+	return out, nil
 }
 
 func parseFile(f *os.File) ([]Pattern, error) {
@@ -49,7 +60,7 @@ func parseFile(f *os.File) ([]Pattern, error) {
 	cols := make([]int, 0)
 	row := 0
 	patterns := make([]Pattern, 0)
-	primes := genPrimes(1000)
+	primes := genPrimes(100)
 	for buf.Scan() {
 		line := buf.Text()
 		if len(line) <= 1 {
@@ -81,7 +92,7 @@ func parseFile(f *os.File) ([]Pattern, error) {
 	}
 	patterns = append(patterns, Pattern{rows, cols})
 	for _, p := range patterns {
-		slog.Info("parse", slog.Any("p", p))
+		slog.Debug("parse", slog.Any("p", p))
 	}
 	return patterns, nil
 }
@@ -91,13 +102,18 @@ type Pattern struct {
 	cols []int
 }
 
-func (p *Pattern) value() int {
+func (p *Pattern) value(mirrorFunc func([]int) (int, bool)) int {
 	var v int
 	var mirrorAxis string
-	if colMirrorIdx, okCols := findMirrorIdx(p.cols); okCols {
+	colMirrorIdx, okCols := mirrorFunc(p.cols)
+	rowMirrorIdx, okRows := mirrorFunc(p.rows)
+	if okCols && okRows {
+		panic(fmt.Errorf("Found mirror in both rows and cols"))
+	}
+	if okCols {
 		v = colMirrorIdx + 1
 		mirrorAxis = "cols"
-	} else if rowMirrorIdx, okRows := findMirrorIdx(p.rows); okRows {
+	} else if okRows {
 		v = 100 * (rowMirrorIdx + 1)
 		mirrorAxis = "rows"
 	} else {
@@ -144,4 +160,56 @@ func findMirrorIdx(xs []int) (int, bool) {
 		}
 	}
 	return -1, false
+}
+
+func findMirrorIdxV2(xs []int) (int, bool) {
+	// if smudge, the quotient scores of two lines is one of the primes
+	primes := genPrimes(100)
+	var smudges, smudgeIdx, quotient, remainder int
+	for i := 0; i < len(xs)-1; i++ {
+		isMirrorIdx := true
+		smudges = 1
+	inner:
+		for o := 0; o <= min(i, len(xs)-i-2); o++ {
+			left := xs[i-o]
+			right := xs[i+o+1]
+			if left-right != 0 {
+				if left > right {
+					quotient, remainder = divmod(left, right)
+				} else {
+					quotient, remainder = divmod(right, left)
+				}
+				if remainder == 0 && smudges > 0 && Contains(primes, quotient) {
+					smudgeIdx = o
+					smudges -= 1
+				} else {
+					isMirrorIdx = false
+					break inner
+				}
+			}
+		}
+		if isMirrorIdx && smudges == 0 {
+			slog.Info("mirror",
+				slog.Int("smudgeOffset", smudgeIdx),
+				slog.Int("idx", i),
+			)
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func Contains[T comparable](arr []T, t T) bool {
+	for _, x := range arr {
+		if x == t {
+			return true
+		}
+	}
+	return false
+}
+
+func divmod(numerator, denominator int) (int, int) {
+	quotient := numerator / denominator
+	remainder := numerator % denominator
+	return quotient, remainder
 }
