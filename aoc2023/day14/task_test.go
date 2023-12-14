@@ -17,7 +17,7 @@ func TestPart1Sample(t *testing.T) {
 func TestPart1Full(t *testing.T) {
 	out, e := Part1("testdata/full.txt")
 	assert.Nil(t, e, "Part1 failed!")
-	expected := -1
+	expected := 106648
 	assert.Equal(t, expected, out, "should match")
 }
 
